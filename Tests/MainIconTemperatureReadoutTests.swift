@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Vorssaint
 
+import AppKit
 import Foundation
 
 enum MainIconTemperatureReadoutTests {
@@ -11,9 +12,21 @@ enum MainIconTemperatureReadoutTests {
     }
 
     private static func testDefaults(_ suite: TestSuite) {
-        let defaults = UserDefaults.standard
+        let suiteName = "vorss.tests.mainicon.\(UUID().uuidString)"
+        guard let defaults = UserDefaults(suiteName: suiteName) else {
+            suite.expect(false, "Failed to create isolated defaults suite")
+            return
+        }
+        defer {
+            defaults.removePersistentDomain(forName: suiteName)
+        }
+        defaults.register(defaults: [
+            DefaultsKey.menuBarReplaceMainIconWithTemperature: false,
+            DefaultsKey.menuBarMainIconTemperatureLayout: MainIconTemperatureLayout.defaultLayout.rawValue,
+            DefaultsKey.menuBarMainIconTopMetric: MenuBarMetric.cpuTemperature.rawValue,
+            DefaultsKey.menuBarMainIconBottomMetric: MenuBarMetric.gpuTemperature.rawValue,
+        ])
 
-        // Check defaults registration
         let replaceIcon = defaults.bool(forKey: DefaultsKey.menuBarReplaceMainIconWithTemperature)
         suite.expect(replaceIcon == false, "Main icon replacement default is off")
 
@@ -31,16 +44,25 @@ enum MainIconTemperatureReadoutTests {
     }
 
     private static func testRenderingFormats(_ suite: TestSuite) {
-        var snapshot = SystemSnapshot()
-        snapshot.cpuTemperature = 45.0
-        snapshot.gpuTemperature = 42.0
-        snapshot.batteryTemperature = 33.0
+        let suiteName = "vorss.tests.mainicon.rendering.\(UUID().uuidString)"
+        guard let defaults = UserDefaults(suiteName: suiteName) else {
+            suite.expect(false, "Failed to create isolated defaults suite")
+            return
+        }
+        defer {
+            defaults.removePersistentDomain(forName: suiteName)
+        }
 
-        let defaults = UserDefaults.standard
+        defaults.set(TemperatureUnit.celsius.rawValue, forKey: DefaultsKey.temperatureUnit)
         defaults.set(true, forKey: DefaultsKey.menuBarReplaceMainIconWithTemperature)
         defaults.set("stacked", forKey: DefaultsKey.menuBarMainIconTemperatureLayout)
         defaults.set(MenuBarMetric.cpuTemperature.rawValue, forKey: DefaultsKey.menuBarMainIconTopMetric)
         defaults.set(MenuBarMetric.gpuTemperature.rawValue, forKey: DefaultsKey.menuBarMainIconBottomMetric)
+
+        var snapshot = SystemSnapshot()
+        snapshot.cpuTemperature = 45.0
+        snapshot.gpuTemperature = 42.0
+        snapshot.batteryTemperature = 33.0
 
         // Test stacked rendering string helper
         let stackedSegments = MenuBarRenderer.mainIconTemperatureSegments(for: snapshot, in: defaults)
@@ -67,17 +89,19 @@ enum MainIconTemperatureReadoutTests {
         }.joined()
 
         suite.expect(sideText.contains("45°") && sideText.contains("42°"), "Side-by-side text contains both 45° and 42°")
-
-        // Reset defaults
-        defaults.removeObject(forKey: DefaultsKey.menuBarReplaceMainIconWithTemperature)
-        defaults.removeObject(forKey: DefaultsKey.menuBarMainIconTemperatureLayout)
-        defaults.removeObject(forKey: DefaultsKey.menuBarMainIconTopMetric)
-        defaults.removeObject(forKey: DefaultsKey.menuBarMainIconBottomMetric)
     }
 
     private static func testStatusItemClickBehavior(_ suite: TestSuite) {
-        let defaults = UserDefaults.standard
-        defaults.set(true, forKey: DefaultsKey.menuBarReplaceMainIconWithTemperature)
+        let previousReplace = UserDefaults.standard.object(forKey: DefaultsKey.menuBarReplaceMainIconWithTemperature)
+        defer {
+            if let previousReplace {
+                UserDefaults.standard.set(previousReplace, forKey: DefaultsKey.menuBarReplaceMainIconWithTemperature)
+            } else {
+                UserDefaults.standard.removeObject(forKey: DefaultsKey.menuBarReplaceMainIconWithTemperature)
+            }
+        }
+
+        UserDefaults.standard.set(true, forKey: DefaultsKey.menuBarReplaceMainIconWithTemperature)
 
         var mainPanelOpened = false
         let controller = StatusItemController()
@@ -85,10 +109,17 @@ enum MainIconTemperatureReadoutTests {
             mainPanelOpened = true
         }
 
-        // Simulate click
-        controller.onLeftClick?()
-        suite.expect(mainPanelOpened, "Clicking status item opens main homepage/panel when icon is replaced with temperatures")
+        guard let button = controller.button,
+              let target = button.target,
+              let action = button.action else {
+            suite.expect(false, "Status item button, target, or action missing")
+            return
+        }
 
-        defaults.removeObject(forKey: DefaultsKey.menuBarReplaceMainIconWithTemperature)
+        suite.expect(target === controller, "Status item button target is controller")
+
+        // Perform actual action on button target
+        _ = (target as AnyObject).perform(action, with: button)
+        suite.expect(mainPanelOpened, "Status item button action triggers onLeftClick callback to open main panel")
     }
 }

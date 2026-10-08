@@ -151,22 +151,22 @@ struct MonitorSettings: View {
                 Toggle(l10n.s.monitorSeparateMenuBarMetrics, isOn: $separateMetrics).labelsHidden()
             }
             Divider()
-            SettingsRow(symbol: "thermometer.medium", title: "Replace menu bar icon with temperatures",
-                        caption: "Displays live temperature readouts directly on the main menu bar icon") {
-                Toggle("Replace menu bar icon with temperatures", isOn: $replaceMainIconWithTemp).labelsHidden()
+            SettingsRow(symbol: "thermometer.medium", title: appearanceStrings.replaceIconToggle,
+                        caption: appearanceStrings.replaceIconCaption) {
+                Toggle(appearanceStrings.replaceIconToggle, isOn: $replaceMainIconWithTemp).labelsHidden()
             }
             if replaceMainIconWithTemp {
-                SettingsRow(symbol: "rectangle.split.2x1", title: "Temperature Layout") {
-                    Picker("Layout", selection: $mainIconLayout) {
-                        Text("Stacked").tag(MainIconTemperatureLayout.stacked.rawValue)
-                        Text("Side by Side").tag(MainIconTemperatureLayout.sideBySide.rawValue)
+                SettingsRow(symbol: "rectangle.split.2x1", title: appearanceStrings.temperatureLayout) {
+                    Picker(appearanceStrings.temperatureLayout, selection: $mainIconLayout) {
+                        Text(appearanceStrings.stacked).tag(MainIconTemperatureLayout.stacked.rawValue)
+                        Text(appearanceStrings.sideBySide).tag(MainIconTemperatureLayout.sideBySide.rawValue)
                     }
                     .pickerStyle(.segmented)
                     .labelsHidden()
                     .fixedSize()
                 }
-                SettingsRow(symbol: "arrow.up.square", title: "Top Sensor") {
-                    Picker("Top Sensor", selection: $mainIconTopMetric) {
+                SettingsRow(symbol: "arrow.up.square", title: appearanceStrings.topSensor) {
+                    Picker(appearanceStrings.topSensor, selection: $mainIconTopMetric) {
                         Text(l10n.s.monitorShowCPUTemperature).tag(MenuBarMetric.cpuTemperature.rawValue)
                         Text(l10n.s.monitorShowGPUTemperature).tag(MenuBarMetric.gpuTemperature.rawValue)
                         Text(l10n.s.monitorShowBatteryTemperature).tag(MenuBarMetric.batteryTemperature.rawValue)
@@ -174,8 +174,8 @@ struct MonitorSettings: View {
                     .pickerStyle(.menu)
                     .labelsHidden()
                 }
-                SettingsRow(symbol: "arrow.down.square", title: "Bottom Sensor") {
-                    Picker("Bottom Sensor", selection: $mainIconBottomMetric) {
+                SettingsRow(symbol: "arrow.down.square", title: appearanceStrings.bottomSensor) {
+                    Picker(appearanceStrings.bottomSensor, selection: $mainIconBottomMetric) {
                         Text(l10n.s.monitorShowCPUTemperature).tag(MenuBarMetric.cpuTemperature.rawValue)
                         Text(l10n.s.monitorShowGPUTemperature).tag(MenuBarMetric.gpuTemperature.rawValue)
                         Text(l10n.s.monitorShowBatteryTemperature).tag(MenuBarMetric.batteryTemperature.rawValue)

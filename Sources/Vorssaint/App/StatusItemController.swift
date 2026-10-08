@@ -197,7 +197,9 @@ final class StatusItemController {
         SystemMonitor.shared.$snapshot
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                guard MenuBarMetric.anyEnabled(in: .standard) else { return }
+                let active = UserDefaults.standard.bool(forKey: DefaultsKey.menuBarReplaceMainIconWithTemperature)
+                    || MenuBarMetric.anyEnabled(in: .standard)
+                guard active else { return }
                 self?.refresh()
             }
             .store(in: &cancellables)
@@ -281,7 +283,9 @@ final class StatusItemController {
         let defaults = UserDefaults.standard
         let interval = Defaults.sanitizedMonitorInterval(defaults.integer(forKey: DefaultsKey.monitorInterval))
         SystemMonitor.shared.setInterval(seconds: interval)
-        SystemMonitor.shared.setMenuBarActive(MenuBarMetric.anyEnabled(in: defaults))
+        let active = defaults.bool(forKey: DefaultsKey.menuBarReplaceMainIconWithTemperature)
+            || MenuBarMetric.anyEnabled(in: defaults)
+        SystemMonitor.shared.setMenuBarActive(active)
     }
 
     private func syncTitleTimer(keepAwakeActive: Bool,
@@ -393,7 +397,8 @@ final class StatusItemController {
         let stateKey = [String(hidden), String(mainItemHidden), String(updateAvailable),
                         String(keepAwakeActive), KeepAwakeIconTint.current.rawValue,
                         KeepAwakeActiveIcon.current.rawValue, BlackHoleGlyph.chosenSymbolName,
-                        String(micBadgeActive), String(replaceWithTemp)].joined(separator: "|")
+                        String(micBadgeActive), String(replaceWithTemp),
+                        replaceWithTemp ? button.attributedTitle.string : ""].joined(separator: "|")
         guard stateKey != lastIconStateKey else { return }
         lastIconStateKey = stateKey
 
