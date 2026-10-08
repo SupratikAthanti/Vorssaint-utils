@@ -143,6 +143,7 @@ enum DefaultsKey {
     static let releaseNotesOnUpdate = "releaseNotesOnUpdate" // show What's New after an update
     static let appVolumes = "appVolumes"                  // [bundle id: 0...2]
     static let appOutputDevices = "appOutputDevices"      // [bundle id: audio device UID]
+    static let mixerUniversalOutputDevice = "mixerUniversalOutputDevice" // last manual all-apps output UID
     static let mixerShowFinder = "mixerShowFinder"
     static let mixerAppArrangement = "mixerAppArrangement"
     static let mixerHideInactiveApps = "mixerHideInactiveApps"
@@ -685,6 +686,7 @@ enum DefaultsKey {
     static let screenshotWatermarkPresets = "screenshotWatermarkPresets"
     static let screenshotOpenEditorDirectly = "screenshotOpenEditorDirectly"
     static let screenshotCopyToClipboard = "screenshotCopyToClipboard"
+    static let screenshotAddToShelf = "screenshotAddToShelf"
     static let screenshotPreviewPosition = "screenshotPreviewPosition"
     static let screenshotPreviewTakesFocus = "screenshotPreviewTakesFocus"
     static let screenshotUploadShortcutEnabled = "screenshotUploadShortcutEnabled"
@@ -876,6 +878,11 @@ enum DefaultsKey {
     static let notchHideInFullscreen = "notchHideInFullscreen"
     static let notchHideUntilHover = "notchHideUntilHover"
     static let notchCoversMenus = "notchCoversMenus"
+    static let notchLowBatteryTint = "notchLowBatteryTint"
+    static let notchLowBatteryThreshold = "notchLowBatteryThreshold"
+    static let notchLowBatteryEarly = "notchLowBatteryEarly"
+    static let notchLowBatteryEarlyThreshold = "notchLowBatteryEarlyThreshold"
+    static let notchLowBatteryMenuBar = "notchLowBatteryMenuBar"
     static let notchHoverDelay = "notchHoverDelay"
     static let notchCloseDelay = "notchCloseDelay"
     static let notchReturnHome = "notchReturnHome"
@@ -1454,6 +1461,11 @@ enum Defaults {
         DefaultsKey.notchHideInFullscreen: false,
         DefaultsKey.notchHideUntilHover: false,
         DefaultsKey.notchCoversMenus: true,
+        DefaultsKey.notchLowBatteryTint: false,
+        DefaultsKey.notchLowBatteryThreshold: NotchSupport.defaultLowBatteryThreshold,
+        DefaultsKey.notchLowBatteryEarly: false,
+        DefaultsKey.notchLowBatteryEarlyThreshold: NotchSupport.defaultEarlyBatteryThreshold,
+        DefaultsKey.notchLowBatteryMenuBar: true,
         DefaultsKey.notchHoverDelay: NotchSupport.defaultHoverDelay,
         DefaultsKey.notchCloseDelay: NotchSupport.defaultCloseDelay,
         DefaultsKey.notchReturnHome: false,
@@ -1482,7 +1494,7 @@ enum Defaults {
         DefaultsKey.notchMascotPalette: NotchMascotPalette.pearl.rawValue,
         DefaultsKey.notchMascotSide: NotchMascotSide.left.rawValue,
         DefaultsKey.notchMascotVisitFrequency: NotchMascotVisitFrequency.normal.rawValue,
-        DefaultsKey.notchMascotHidesWhenIdle: false,
+        DefaultsKey.notchMascotHidesWhenIdle: true,
         DefaultsKey.notchCommandBar: true,
         DefaultsKey.notchCommandBarStyle: NotchCommandBarStyle.droplet.rawValue,
         DefaultsKey.notchHideInCaptures: false,
@@ -1844,6 +1856,7 @@ enum Defaults {
         DefaultsKey.screenshotWatermarkPresets: "[]",
         DefaultsKey.screenshotOpenEditorDirectly: false,
         DefaultsKey.screenshotCopyToClipboard: false,
+        DefaultsKey.screenshotAddToShelf: false,
         DefaultsKey.screenshotPreviewPosition: ScreenshotSupport.QuickPreviewPosition.automatic.rawValue,
         DefaultsKey.screenshotPreviewTakesFocus: true,
         DefaultsKey.screenshotUploadShortcutEnabled: false,

@@ -179,11 +179,17 @@ enum CommandBarFeatureTests {
                    "the Mac's own grouping space still reads as thousands: \(name)")
             suite.expect(mathValue("1\(grouping)5+1", decimal: ",", grouping: grouping) == nil,
                    "a grouping space is never a decimal point: \(name)")
+            suite.expect(mathValue("1\(grouping)234,5\(grouping)67+1", decimal: ",", grouping: grouping) == nil
+                    && mathValue("1\(grouping)234.5\(grouping)67+1", decimal: ",", grouping: grouping) == nil,
+                   "grouping spaces cannot silently join digits after either decimal point: \(name)")
         }
         suite.expect(mathValue("1,5+1", decimal: ".", grouping: "'") == 2.5
                 && mathValue("1,234.5+1", decimal: ".", grouping: "'") == 1235.5
                 && mathValue("1'234.5+1", decimal: ".", grouping: "'") == 1235.5,
                "a comma decimal works where thousands are grouped with an apostrophe")
+        suite.expect(mathValue("1'234.5'67+1", decimal: ".", grouping: "'") == nil
+                && mathValue("1'234,5'67+1", decimal: ".", grouping: "'") == nil,
+               "an apostrophe in the fractional part is rejected instead of changing the number")
         suite.expect(mathValue("1.2.3+1", decimal: ",", grouping: "\u{00A0}") == nil,
                "a repeated alternate separator that is not thousands has no answer")
 
@@ -2643,6 +2649,9 @@ enum CommandBarDropletContract {
         suite.expect(shows.contains("panel.alphaValue = 1") && shows.contains("layer.add(appear, forKey: \"appear\")")
                      && !shows.contains("animator()"),
                      "the bar shows at once and fades in through Core Animation, not through main thread alpha steps")
+        let revealed = shows.components(separatedBy: "panel.alphaValue = 1").dropFirst().first ?? ""
+        suite.expect(revealed.contains("panel.makeKey()") && revealed.contains("self.focusField(in: panel)"),
+                     "the bar takes the keyboard again once the drop shows it, as the window bar does")
 
         let hurry = body(droplet, "func hurry() {")
         suite.expect(hurry.contains("guard falling, let fall, let reveal else { return }")
