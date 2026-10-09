@@ -1936,11 +1936,11 @@ Use these statuses only: `Not assessed`, `Implemented`, `Partial`, `Experimental
 | BD-01 | Display inventory and diagnostics | P0 | Done | macOS 14+ Apple Silicon | `BrightnessService.swift`, `PointerDisplayService.swift` | CoreGraphics display list queries | Active display ID persistence |
 | BD-02 | Per-display brightness controls — reuse/extend | P0 | Done | macOS 14+ Apple Silicon | `BrightnessService.swift` | DisplayServices & DDC/CI I2C | Requires DDC/CI support on external |
 | BD-03 | Extra dimming below normal minimum | P1 | Done | macOS 14+ Apple Silicon | `ExtraBrightnessService.swift` | CGSetDisplayTransferByTable gamma scaling | Software overlay effect |
-| BD-04 | Resolution and display mode selector — requested priority | P0 | Not assessed | — | — | — | — |
-| BD-05 | Refresh-rate selector — requested priority | P0 | Not assessed | — | — | — | — |
-| BD-06 | HiDPI / scaling controls — requested priority | P0 | Not assessed | — | — | — | — |
-| BD-07 | Visual multi-display arrangement — requested priority | P0 | Not assessed | — | — | — | — |
-| BD-08 | Layout/configuration protection and profiles | P1 | Not assessed | — | — | — | — |
+| BD-04 | Resolution and display mode selector — requested priority | P0 | Done | macOS 14+ Apple Silicon | `DisplayModeSupport.swift`, `DisplayModeService.swift` | CGDisplayMode enumeration & rollback timer | None |
+| BD-05 | Refresh-rate selector — requested priority | P0 | Done | macOS 14+ Apple Silicon | `DisplayModeSupport.swift`, `DisplayModeService.swift` | Mode refresh rate derivation & rounding | None |
+| BD-06 | HiDPI / scaling controls — requested priority | P0 | Done | macOS 14+ Apple Silicon | `DisplayModeSupport.swift`, `DisplayModeService.swift` | HiDPI scale factor calculation | None |
+| BD-07 | Visual multi-display arrangement — requested priority | P0 | Done | macOS 14+ Apple Silicon | `DisplayArrangementSupport.swift`, `DisplayArrangementCanvas.swift` | Geometric bounding box & drag snapping | None |
+| BD-08 | Layout/configuration protection and profiles | P1 | Done | macOS 14+ Apple Silicon | `DisplayProfileService.swift`, `DisplayProfileSettings.swift` | Stable identity hashing & profile storage | None |
 | BD-09 | Favorite resolutions and keyboard shortcuts | P1 | Not assessed | — | — | — | — |
 | BD-10 | Display groups and synchronized controls | P1 | Not assessed | — | — | — | — |
 | BD-11 | Connection/disconnection management | P1 | Not assessed | — | — | — | — |
