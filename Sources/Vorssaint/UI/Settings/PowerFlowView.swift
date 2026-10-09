@@ -7,7 +7,6 @@ import SwiftUI
 /// on the left (Wall Charger / Battery) to destination(s) on the right (Battery / Mac System).
 public struct PowerFlowView: View {
     @ObservedObject private var batteryManager = BatteryManager.shared
-    @State private var phase: CGFloat = 0.0
 
     public init() {}
 
@@ -22,11 +21,6 @@ public struct PowerFlowView: View {
                 .padding(12)
                 .background(Color(nsColor: .controlBackgroundColor).opacity(0.5))
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        }
-        .onAppear {
-            withAnimation(.linear(duration: 2.0).repeatForever(autoreverses: false)) {
-                phase -= 20
-            }
         }
     }
 
@@ -91,12 +85,12 @@ public struct PowerFlowView: View {
 
             let isPlugged = batteryManager.isPluggedIn
             let isCharging = batteryManager.isCharging
-            let isDischarging = batteryManager.isDischarging
+            let isDischarging = batteryManager.isDischarging || batteryManager.batteryWatts < 0
 
             HStack(spacing: 0) {
                 // Left Source Card
                 VStack {
-                    if isPlugged {
+                    if isPlugged && !isDischarging {
                         VStack(spacing: 4) {
                             Image(systemName: "bolt.fill")
                                 .font(.system(size: 18, weight: .bold))
@@ -109,7 +103,7 @@ public struct PowerFlowView: View {
                             Image(systemName: "battery.100.bolt")
                                 .font(.system(size: 18, weight: .bold))
                                 .foregroundStyle(Color.green)
-                            Text(String(format: "%.1fW", batteryManager.macWatts))
+                            Text(String(format: "%.1fW", abs(batteryManager.batteryWatts)))
                                 .font(.system(size: 13, weight: .bold, design: .rounded))
                         }
                     }
@@ -122,14 +116,23 @@ public struct PowerFlowView: View {
 
                 // Right Destination Cards
                 VStack(spacing: 12) {
-                    // Battery Sink
+                    // Battery or Wall Sink
                     HStack(spacing: 6) {
-                        Text(String(format: "%.2f W", abs(batteryManager.batteryWatts)))
-                            .font(.system(size: 13, weight: .bold, design: .rounded))
-                        Spacer()
-                        Image(systemName: isCharging ? "battery.100.bolt" : "battery.75")
-                            .font(.system(size: 16))
-                            .foregroundStyle(isCharging ? .green : .secondary)
+                        if isDischarging {
+                            Text(String(format: "%.2f W", batteryManager.wallWatts))
+                                .font(.system(size: 13, weight: .bold, design: .rounded))
+                            Spacer()
+                            Image(systemName: "powerplug.fill")
+                                .font(.system(size: 16))
+                                .foregroundStyle(.secondary)
+                        } else {
+                            Text(String(format: "%.2f W", abs(batteryManager.batteryWatts)))
+                                .font(.system(size: 13, weight: .bold, design: .rounded))
+                            Spacer()
+                            Image(systemName: isCharging ? "battery.100.bolt" : "battery.75")
+                                .font(.system(size: 16))
+                                .foregroundStyle(isCharging ? .green : .secondary)
+                        }
                     }
                     .padding(.horizontal, 10)
                     .frame(width: width * 0.22, height: height * 0.38)
@@ -152,33 +155,38 @@ public struct PowerFlowView: View {
                 }
             }
             .overlay(
-                // Animated Curved Streams
-                Canvas { context, size in
-                    let leftCenter = CGPoint(x: leftX, y: size.height / 2)
-                    let topRightCenter = CGPoint(x: rightX, y: size.height * 0.28)
-                    let bottomRightCenter = CGPoint(x: rightX, y: size.height * 0.72)
+                // Continuous Animated Curved Streams driven by TimelineView
+                TimelineView(.periodic(from: .now, by: 1.0 / 30.0)) { timeline in
+                    let elapsed = timeline.date.timeIntervalSince1970
+                    let animatedPhase = CGFloat(-elapsed * 25.0).truncatingRemainder(dividingBy: 24.0)
 
-                    // Stream to Battery
-                    if isCharging || isDischarging {
-                        var path1 = Path()
-                        path1.move(to: leftCenter)
-                        path1.addCurve(to: topRightCenter,
+                    Canvas { context, size in
+                        let leftCenter = CGPoint(x: leftX, y: size.height / 2)
+                        let topRightCenter = CGPoint(x: rightX, y: size.height * 0.28)
+                        let bottomRightCenter = CGPoint(x: rightX, y: size.height * 0.72)
+
+                        // Top stream (Wall to Battery or Battery to Wall)
+                        if isCharging || isDischarging {
+                            var path1 = Path()
+                            path1.move(to: leftCenter)
+                            path1.addCurve(to: topRightCenter,
+                                           control1: CGPoint(x: size.width * 0.5, y: leftCenter.y),
+                                           control2: CGPoint(x: size.width * 0.5, y: topRightCenter.y))
+
+                            let strokeStyle1 = StrokeStyle(lineWidth: 16, lineCap: .round, dash: [10, 10], dashPhase: animatedPhase)
+                            context.stroke(path1, with: .color(Color.secondary.opacity(0.35)), style: strokeStyle1)
+                        }
+
+                        // Bottom stream to Mac System
+                        var path2 = Path()
+                        path2.move(to: leftCenter)
+                        path2.addCurve(to: bottomRightCenter,
                                        control1: CGPoint(x: size.width * 0.5, y: leftCenter.y),
-                                       control2: CGPoint(x: size.width * 0.5, y: topRightCenter.y))
+                                       control2: CGPoint(x: size.width * 0.5, y: bottomRightCenter.y))
 
-                        let strokeStyle1 = StrokeStyle(lineWidth: 18, lineCap: .round, dash: [10, 10], dashPhase: phase)
-                        context.stroke(path1, with: .color(Color.secondary.opacity(0.35)), style: strokeStyle1)
+                        let strokeStyle2 = StrokeStyle(lineWidth: 22, lineCap: .round, dash: [12, 12], dashPhase: animatedPhase)
+                        context.stroke(path2, with: .color(Color.secondary.opacity(0.35)), style: strokeStyle2)
                     }
-
-                    // Stream to Mac System
-                    var path2 = Path()
-                    path2.move(to: leftCenter)
-                    path2.addCurve(to: bottomRightCenter,
-                                   control1: CGPoint(x: size.width * 0.5, y: leftCenter.y),
-                                   control2: CGPoint(x: size.width * 0.5, y: bottomRightCenter.y))
-
-                    let strokeStyle2 = StrokeStyle(lineWidth: 24, lineCap: .round, dash: [12, 12], dashPhase: phase)
-                    context.stroke(path2, with: .color(Color.secondary.opacity(0.35)), style: strokeStyle2)
                 }
             )
         }

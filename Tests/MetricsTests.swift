@@ -20,7 +20,9 @@ struct MetricsTests {
                 SystemMonitorCPUTests.run(suite)
                 SystemMonitorPlanTests.run(suite)
                 SystemSectionBreakdownTests.run(suite)
+                BatteryManagerTests.run(suite)
             }),
+            ("battery", { BatteryManagerTests.run(suite) }),
             ("clipboard", { ClipboardFeatureTests.run(suite) }),
             ("pointer-input", {
                 PointerOnDisplayContract.run(suite)

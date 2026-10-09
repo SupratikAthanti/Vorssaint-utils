@@ -508,7 +508,7 @@ struct EnergySettings: View {
 
             // Hardware Battery Percentage (Feature 3)
             SettingsRow(symbol: "battery.100", title: "Hardware Battery Percentage",
-                        caption: "Display hardware raw SoC (\(String(format: "%.1f%%", batteryManager.hardwareSoC))) alongside OS percentage (\(batteryManager.currentSoC)%)") {
+                        caption: "Display hardware raw SoC (\(batteryManager.hardwareSoC.map { String(format: "%.1f%%", $0) } ?? "N/A")) alongside OS percentage (\(batteryManager.currentSoC)%)") {
                 Toggle("Hardware Battery Percentage", isOn: $batteryManager.showHardwarePercentage)
                     .labelsHidden()
             }
@@ -632,19 +632,27 @@ struct EnergySettings: View {
             // Task Scheduler (Feature 15) & Automatic Scheduled Calibration (Feature 16)
             SettingsRow(symbol: "calendar.badge.clock", title: "Battery Scheduler & Auto Calibration",
                         caption: "Automated daily/monthly schedules for Top Up, Charge Limits, and Recalibration") {
-                VStack(alignment: .trailing, spacing: 6) {
-                    ForEach(batteryManager.scheduledTasks) { task in
-                        HStack {
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(Array(batteryManager.scheduledTasks.enumerated()), id: \.element.id) { index, task in
+                        HStack(spacing: 8) {
                             Text(task.name)
                                 .font(.caption.weight(.medium))
                             Spacer()
+                            Picker("Action", selection: Binding(
+                                get: { batteryManager.scheduledTasks[index].actionRaw },
+                                set: { batteryManager.scheduledTasks[index].actionRaw = $0 }
+                            )) {
+                                Text("Charge Limit").tag("setLimit")
+                                Text("Top Up").tag("topUp")
+                                Text("Discharge").tag("discharge")
+                                Text("Calibration").tag("calibration")
+                            }
+                            .pickerStyle(.menu)
+                            .frame(width: 110)
+
                             Toggle("", isOn: Binding(
-                                get: { task.enabled },
-                                set: { enabled in
-                                    if let idx = batteryManager.scheduledTasks.firstIndex(where: { $0.id == task.id }) {
-                                        batteryManager.scheduledTasks[idx].enabled = enabled
-                                    }
-                                }
+                                get: { batteryManager.scheduledTasks[index].enabled },
+                                set: { batteryManager.scheduledTasks[index].enabled = $0 }
                             ))
                             .labelsHidden()
                         }
