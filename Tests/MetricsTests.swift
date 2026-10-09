@@ -114,6 +114,7 @@ struct MetricsTests {
                 DisplayBrightnessTests.run(suite)
                 BrightnessStepTests.run(suite)
                 DisplayModeTests.run(suite)
+                DisplayModeSelectorTests.run(suite)
                 RefreshRateTests.run(suite)
                 DisplayArrangementTests.run(suite)
                 DisplayProfileTests.run(suite)
