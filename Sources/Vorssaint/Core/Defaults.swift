@@ -24,6 +24,21 @@ enum DefaultsKey {
     static let updateShowcaseMediaOverride = "updateShowcaseMediaOverride"
     static let defaultDuration = "defaultDurationMinutes" // 0 = indefinite
     static let batteryLimit = "batteryLimitPercent"       // 0 = never
+    static let batteryChargeLimit = "batteryChargeLimitPercent"
+    static let batteryTopUpActive = "batteryTopUpActive"
+    static let batteryShowHardwarePercentage = "batteryShowHardwarePercentage"
+    static let batteryLiveStatusIconsEnabled = "batteryLiveStatusIconsEnabled"
+    static let batteryDisableSleepUntilLimit = "batteryDisableSleepUntilLimit"
+    static let batteryStopChargingWhenSleeping = "batteryStopChargingWhenSleeping"
+    static let batteryStopChargingWhenAppClosed = "batteryStopChargingWhenAppClosed"
+    static let batteryDischargeActive = "batteryDischargeActive"
+    static let batteryAutomaticDischarge = "batteryAutomaticDischarge"
+    static let batterySailingModeEnabled = "batterySailingModeEnabled"
+    static let batterySailingHysteresis = "batterySailingHysteresis"
+    static let batteryHeatProtectionEnabled = "batteryHeatProtectionEnabled"
+    static let batteryHeatProtectionThresholdCelsius = "batteryHeatProtectionThresholdCelsius"
+    static let batteryMagSafeLEDControlEnabled = "batteryMagSafeLEDControlEnabled"
+    static let batteryScheduledTasks = "batteryScheduledTasks"
     static let keepAwakeAutoStart = "keepAwakeAutoStart"  // start Keep Awake when the app launches
     static let keepAwakeRightClickToggle = "keepAwakeRightClickToggle"
     static let keepAwakeAllowDisplaySleep = "keepAwakeAllowDisplaySleep"

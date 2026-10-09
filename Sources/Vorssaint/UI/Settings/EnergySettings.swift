@@ -38,6 +38,8 @@ struct EnergySettings: View {
     @AppStorage(DefaultsKey.keepAwakeMouseJiggleInterval) private var keepAwakeMouseJiggleInterval = 5
     @State private var brightnessOptionsExpanded = false
 
+    @ObservedObject private var batteryManager = BatteryManager.shared
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
@@ -48,6 +50,10 @@ struct EnergySettings: View {
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+
+                // Battery & Power Flow Diagram + Management Features Card
+                batteryAndPowerFlowCard
+
                 if (focus == nil || focus == .keepAwake), AppFeature.keepAwake.isAvailable {
                     keepAwakeCard
                         .settingsSectionAnchor(.keepAwake, cornerRadius: 16)
@@ -487,6 +493,182 @@ struct EnergySettings: View {
                             caption: strings.unsupported) {
                     EmptyView()
                 }
+            }
+        }
+    }
+
+    // MARK: - Battery & Power Flow Features
+
+    private var batteryAndPowerFlowCard: some View {
+        SettingsCard(title: "Battery & Power Flow") {
+            // Power Flow Sankey Visualization (Feature 17)
+            PowerFlowView()
+
+            Divider()
+
+            // Hardware Battery Percentage (Feature 3)
+            SettingsRow(symbol: "battery.100", title: "Hardware Battery Percentage",
+                        caption: "Display hardware raw SoC (\(batteryManager.hardwareSoC.map { String(format: "%.1f%%", $0) } ?? "N/A")) alongside OS percentage (\(batteryManager.currentSoC)%)") {
+                Toggle("Hardware Battery Percentage", isOn: $batteryManager.showHardwarePercentage)
+                    .labelsHidden()
+            }
+
+            // Live Status Icons (Feature 4)
+            SettingsRow(symbol: "bolt.batteryblock.fill", title: "Live Status Icons",
+                        caption: "Dynamic menu bar icon reflecting charging, holding, or on-battery state") {
+                Toggle("Live Status Icons", isOn: $batteryManager.liveStatusIconsEnabled)
+                    .labelsHidden()
+            }
+
+            // Disable Sleep until Charge Limit (Feature 5)
+            SettingsRow(symbol: "moon.stars.fill", title: "Disable Sleep until Charge Limit",
+                        caption: "Keeps Mac awake in clamshell mode until target charge limit is reached") {
+                Toggle("Disable Sleep until Charge Limit", isOn: $batteryManager.disableSleepUntilLimit)
+                    .labelsHidden()
+            }
+
+            // Stop Charging when Sleeping (Feature 6)
+            SettingsRow(symbol: "zzz", title: "Stop Charging when Sleeping",
+                        caption: "Pauses charging right before sleep to preserve current charge level") {
+                Toggle("Stop Charging when Sleeping", isOn: $batteryManager.stopChargingWhenSleeping)
+                    .labelsHidden()
+            }
+
+            // Stop Charging when App Closed (Feature 7)
+            SettingsRow(symbol: "xmark.app.fill", title: "Stop Charging when App Closed",
+                        caption: "SMC enforces charge limit hold even when Vorssaint application is closed") {
+                Toggle("Stop Charging when App Closed", isOn: $batteryManager.stopChargingWhenAppClosed)
+                    .labelsHidden()
+            }
+
+            Divider()
+
+            // Discharge (Feature 8) & Automatic Discharge (Feature 9)
+            SettingsRow(symbol: "arrow.down.batteryblock.fill", title: "Discharge Mode",
+                        caption: "Discharges battery down to target limit while plugged into AC power") {
+                Button(batteryManager.isDischargeActive ? "Discharging..." : "Start Discharge") {
+                    batteryManager.toggleDischarge()
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(batteryManager.isDischargeActive ? .orange : .accentColor)
+            }
+
+            SettingsRow(symbol: "arrow.triangle.2.circlepath", title: "Automatic Discharge",
+                        caption: "Automatically discharges when charge limit is lowered below current percentage") {
+                Toggle("Automatic Discharge", isOn: $batteryManager.automaticDischarge)
+                    .labelsHidden()
+            }
+
+            // Sailing Mode (Feature 10)
+            SettingsRow(symbol: "wind", title: "Sailing Mode",
+                        caption: "Hysteresis window prevents micro-charging by allowing discharge interval") {
+                Toggle("Sailing Mode", isOn: $batteryManager.sailingModeEnabled)
+                    .labelsHidden()
+            }
+            if batteryManager.sailingModeEnabled {
+                HStack {
+                    Text("Hysteresis Interval:")
+                        .font(.caption)
+                    Spacer()
+                    Picker("Hysteresis", selection: $batteryManager.sailingHysteresis) {
+                        Text("3%").tag(3)
+                        Text("5%").tag(5)
+                        Text("8%").tag(8)
+                        Text("10%").tag(10)
+                    }
+                    .pickerStyle(.menu)
+                }
+                .padding(.leading, settingsRowTextInset)
+            }
+
+            Divider()
+
+            // Heat Protection (Feature 11)
+            SettingsRow(symbol: "thermometer.high", title: "Heat Protection",
+                        caption: "Halts charging if battery temperature exceeds threshold (\(String(format: "%.1f°C", batteryManager.heatProtectionThresholdCelsius)))") {
+                Toggle("Heat Protection", isOn: $batteryManager.heatProtectionEnabled)
+                    .labelsHidden()
+            }
+            if batteryManager.heatProtectionEnabled {
+                HStack {
+                    Text("Threshold Temperature:")
+                        .font(.caption)
+                    Spacer()
+                    Picker("Threshold", selection: $batteryManager.heatProtectionThresholdCelsius) {
+                        Text("35°C (95°F)").tag(35.0)
+                        Text("38°C (100°F)").tag(38.0)
+                        Text("40°C (104°F)").tag(40.0)
+                    }
+                    .pickerStyle(.menu)
+                }
+                .padding(.leading, settingsRowTextInset)
+            }
+
+            // Control MagSafe LED (Feature 12)
+            SettingsRow(symbol: "lightbulb.fill", title: "Control MagSafe LED",
+                        caption: "Indicates limit reached (Green), charging (Amber) or thermal protection (Blinking Amber)") {
+                Toggle("Control MagSafe LED", isOn: $batteryManager.magSafeLEDControlEnabled)
+                    .labelsHidden()
+            }
+
+            Divider()
+
+            // Calibration Mode (Feature 14) & Automatic Scheduled Calibration (Feature 16)
+            SettingsRow(symbol: "gauge.with.needle.fill", title: "Calibration Mode",
+                        caption: "Automated cycle (100% -> 10% -> 100%) to recalibrate battery SoC accuracy") {
+                if batteryManager.calibrationStage != .inactive {
+                    Button("Stop Calibration") {
+                        batteryManager.stopCalibration()
+                    }
+                    .buttonStyle(.bordered)
+                } else {
+                    Button("Start Calibration") {
+                        batteryManager.startCalibration()
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+            }
+
+            // Task Scheduler (Feature 15) & Automatic Scheduled Calibration (Feature 16)
+            SettingsRow(symbol: "calendar.badge.clock", title: "Battery Scheduler & Auto Calibration",
+                        caption: "Automated daily/monthly schedules for Top Up, Charge Limits, and Recalibration") {
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(Array(batteryManager.scheduledTasks.enumerated()), id: \.element.id) { index, task in
+                        HStack(spacing: 8) {
+                            Text(task.name)
+                                .font(.caption.weight(.medium))
+                            Spacer()
+                            Picker("Action", selection: Binding(
+                                get: { batteryManager.scheduledTasks[index].actionRaw },
+                                set: { batteryManager.scheduledTasks[index].actionRaw = $0 }
+                            )) {
+                                Text("Charge Limit").tag("setLimit")
+                                Text("Top Up").tag("topUp")
+                                Text("Discharge").tag("discharge")
+                                Text("Calibration").tag("calibration")
+                            }
+                            .pickerStyle(.menu)
+                            .frame(width: 110)
+
+                            Toggle("", isOn: Binding(
+                                get: { batteryManager.scheduledTasks[index].enabled },
+                                set: { batteryManager.scheduledTasks[index].enabled = $0 }
+                            ))
+                            .labelsHidden()
+                        }
+                    }
+                }
+            }
+
+            Divider()
+
+            // Apple Shortcuts Integration & Fast User Switching Notice (Features 13, 18)
+            HStack(spacing: 8) {
+                Image(systemName: "square.stack.3d.up.fill")
+                    .foregroundStyle(.accentColor)
+                Text("Fast User Switching & macOS Shortcuts Integration Active")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
         }
     }
