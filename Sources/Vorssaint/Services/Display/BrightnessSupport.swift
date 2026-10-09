@@ -28,6 +28,8 @@ enum BrightnessSupport {
 
     /// VCP code for luminance in the DDC/CI standard.
     static let luminanceCode: UInt8 = 0x10
+    /// VCP code for contrast in the DDC/CI standard.
+    static let contrastCode: UInt8 = 0x12
     /// 7-bit I2C address DDC displays listen on.
     static let chipAddress: UInt32 = 0x37
     /// Sub-address DDC hosts write through.

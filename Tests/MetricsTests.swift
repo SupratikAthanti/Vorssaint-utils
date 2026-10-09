@@ -22,7 +22,12 @@ struct MetricsTests {
                 SystemSectionBreakdownTests.run(suite)
                 BatteryManagerTests.run(suite)
             }),
-            ("battery", { BatteryManagerTests.run(suite) }),
+            ("battery", {
+                BatteryManagerTests.run(suite)
+                MockSMCClientTests.run(suite)
+                ThermalStateSimulationTests.run(suite)
+                PowerEventSimulationTests.run(suite)
+            }),
             ("clipboard", { ClipboardFeatureTests.run(suite) }),
             ("pointer-input", {
                 PointerOnDisplayContract.run(suite)
@@ -112,6 +117,7 @@ struct MetricsTests {
             ("display-restoration", {
                 DisplayRestorationTests.run(suite)
                 BrightnessStepTests.run(suite)
+                DDCDisplaySimulatorTests.run(suite)
             }),
             ("software-dimming", { SoftwareDimmingRouteTests.run { suite.expect($0, $1) } }),
             ("capture", { ScreenshotSelectionRefreshContract.run(suite) }),

@@ -655,6 +655,22 @@ final class BrightnessService: ObservableObject {
         }
     }
 
+    /// Set DDC/CI contrast for an external display.
+    func setContrast(_ value: Double, for id: CGDirectDisplayID) {
+        guard value.isFinite else { return }
+        let clamped = min(max(value, 0), 1)
+        workQueue.async { [weak self] in
+            guard let self = self else { return }
+            self.stateLock.lock()
+            let route = self.routes[id]
+            self.stateLock.unlock()
+            guard let route = route, let service = route.ioService else { return }
+            let deviceValue = BrightnessSupport.deviceValue(for: clamped, maximum: 100)
+            let packet = BrightnessSupport.writePacket(code: BrightnessSupport.contrastCode, value: deviceValue)
+            _ = self.ddcSend(to: id, service: service, packet: packet)
+        }
+    }
+
     // MARK: - Display power
 
     var displaySwitchingAvailable: Bool { DisplayConfigurationBridge.configureEnabled != nil }
