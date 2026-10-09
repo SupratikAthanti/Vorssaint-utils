@@ -118,6 +118,7 @@ struct MetricsTests {
                 DisplayProfileTests.run(suite)
                 DisplayFavoritesTests.run(suite)
                 DisplayGroupTests.run(suite)
+                DisplayConnectionTests.run(suite)
             }),
             ("software-dimming", { SoftwareDimmingRouteTests.run { suite.expect($0, $1) } }),
             ("capture", { ScreenshotSelectionRefreshContract.run(suite) }),
