@@ -8,10 +8,12 @@ import SwiftUI
 struct DisplayModeSelectorView: View {
     @ObservedObject private var service = DisplayModeService.shared
     @State private var selectedModeID: Int = -1
+    @State private var selectedRefreshRateID: Int = -1
+    @State private var selectedScalingID: Int = -1
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Display Resolution & Mode")
+            Text("Display Resolution & Scaling")
                 .font(.headline)
 
             if service.availableModes.isEmpty {
@@ -28,6 +30,38 @@ struct DisplayModeSelectorView: View {
                 .onChange(of: selectedModeID) { _, newID in
                     if let mode = service.availableModes.first(where: { $0.id == newID }) {
                         service.applyMode(mode)
+                        if let current = service.currentMode {
+                            selectedRefreshRateID = service.availableRefreshRates.first(where: { abs($0.exactRate - current.refreshRate) < 1.0 })?.id ?? -1
+                            selectedScalingID = service.availableScalingOptions.first(where: { $0.logicalWidth == current.width && $0.logicalHeight == current.height })?.id ?? -1
+                        }
+                    }
+                }
+
+                if !service.availableScalingOptions.isEmpty {
+                    Picker("Scaling (HiDPI)", selection: $selectedScalingID) {
+                        ForEach(service.availableScalingOptions) { option in
+                            Text(option.summary).tag(option.id)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .onChange(of: selectedScalingID) { _, newScalingID in
+                        if let option = service.availableScalingOptions.first(where: { $0.id == newScalingID }) {
+                            service.applyScalingOption(option)
+                        }
+                    }
+                }
+
+                if !service.availableRefreshRates.isEmpty {
+                    Picker("Refresh Rate", selection: $selectedRefreshRateID) {
+                        ForEach(service.availableRefreshRates) { rateOption in
+                            Text(rateOption.summary).tag(rateOption.id)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .onChange(of: selectedRefreshRateID) { _, newRateID in
+                        if let option = service.availableRefreshRates.first(where: { $0.id == newRateID }) {
+                            service.applyRefreshRate(option)
+                        }
                     }
                 }
             }
@@ -35,7 +69,7 @@ struct DisplayModeSelectorView: View {
             if case .pendingConfirmation(_, _, let targetW, let targetH, let remaining) = service.confirmationState {
                 HStack(spacing: 10) {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Keep new resolution (\(targetW) × \(targetH))?")
+                        Text("Keep new display settings (\(targetW) × \(targetH))?")
                             .font(.system(size: 11, weight: .semibold))
                         Text("Reverting automatically in \(Int(remaining.rounded()))s...")
                             .font(.system(size: 10))
@@ -64,6 +98,8 @@ struct DisplayModeSelectorView: View {
             service.refreshModes()
             if let current = service.currentMode {
                 selectedModeID = current.id
+                selectedRefreshRateID = service.availableRefreshRates.first(where: { abs($0.exactRate - current.refreshRate) < 1.0 })?.id ?? -1
+                selectedScalingID = service.availableScalingOptions.first(where: { $0.logicalWidth == current.width && $0.logicalHeight == current.height })?.id ?? -1
             }
         }
     }

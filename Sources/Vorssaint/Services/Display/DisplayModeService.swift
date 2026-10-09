@@ -16,6 +16,8 @@ final class DisplayModeService: ObservableObject {
 
     @Published private(set) var availableModes: [DisplayModeSupport.DisplayModeItem] = []
     @Published private(set) var currentMode: DisplayModeSupport.DisplayModeItem?
+    @Published private(set) var availableRefreshRates: [DisplayModeSupport.RefreshRateOption] = []
+    @Published private(set) var availableScalingOptions: [DisplayModeSupport.ScalingOption] = []
     @Published private(set) var confirmationState: DisplayModeSupport.RollbackState.Status = .normal
 
     private var rollbackState = DisplayModeSupport.RollbackState()
@@ -34,9 +36,17 @@ final class DisplayModeService: ObservableObject {
             let curWidth = Int(CGDisplayModeGetWidth(currentCGMode))
             let curHeight = Int(CGDisplayModeGetHeight(currentCGMode))
             let curRefresh = Double(CGDisplayModeGetRefreshRate(currentCGMode))
-            currentMode = availableModes.first(where: { abs($0.width - curWidth) < 2 && abs($0.height - curHeight) < 2 })
+            currentMode = availableModes.first(where: { abs($0.width - curWidth) < 2 && abs($0.height - curHeight) < 2 && abs($0.refreshRate - curRefresh) < 1.0 })
+                ?? availableModes.first(where: { abs($0.width - curWidth) < 2 && abs($0.height - curHeight) < 2 })
                 ?? DisplayModeSupport.DisplayModeItem(id: -1, cgMode: currentCGMode, width: curWidth, height: curHeight, refreshRate: curRefresh, isInterlaced: false, isUsable: true)
         }
+
+        if let current = currentMode {
+            availableRefreshRates = DisplayModeSupport.deriveRefreshRates(for: availableModes, width: current.width, height: current.height)
+        } else {
+            availableRefreshRates = []
+        }
+        availableScalingOptions = DisplayModeSupport.deriveScalingOptions(for: availableModes)
     }
 
     /// Applies a display mode with a timeout confirmation safety mechanism.
@@ -58,8 +68,25 @@ final class DisplayModeService: ObservableObject {
                                    targetWidth: mode.width, targetHeight: mode.height)
         confirmationState = rollbackState.status
         currentMode = mode
+        availableRefreshRates = DisplayModeSupport.deriveRefreshRates(for: availableModes, width: mode.width, height: mode.height)
 
         startConfirmationCountdown(displayID: displayID)
+    }
+
+    /// Applies a specific refresh rate option (BD-05).
+    func applyRefreshRate(_ option: DisplayModeSupport.RefreshRateOption, displayID: CGDirectDisplayID = CGMainDisplayID()) {
+        guard let matchingMode = availableModes.first(where: { $0.id == option.modeID }) ?? availableModes.first(where: { $0.width == currentMode?.width && $0.height == currentMode?.height && Int($0.refreshRate.rounded()) == option.roundedRate }) else {
+            return
+        }
+        applyMode(matchingMode, displayID: displayID)
+    }
+
+    /// Applies a specific HiDPI scaling option / "looks like" resolution (BD-06).
+    func applyScalingOption(_ option: DisplayModeSupport.ScalingOption, displayID: CGDirectDisplayID = CGMainDisplayID()) {
+        guard let matchingMode = availableModes.first(where: { $0.id == option.modeID }) ?? availableModes.first(where: { $0.width == option.logicalWidth && $0.height == option.logicalHeight }) else {
+            return
+        }
+        applyMode(matchingMode, displayID: displayID)
     }
 
     /// Confirms the current resolution change, cancelling the rollback timer.
