@@ -124,7 +124,10 @@ struct MetricsTests {
                 DisplayColorTests.run(suite)
             }),
             ("display-inventory", { DisplayInventoryTests.run(suite) }),
-            ("software-dimming", { SoftwareDimmingRouteTests.run { suite.expect($0, $1) } }),
+            ("software-dimming", { 
+                SoftwareDimmingRouteTests.run { suite.expect($0, $1) }
+                DisplayDimmingTests.run { suite.expect($0, $1) }
+            }),
             ("capture", { ScreenshotSelectionRefreshContract.run(suite) }),
             ("keyboard", {
                 KeyboardFeatureTests.run(suite)
