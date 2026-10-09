@@ -197,7 +197,9 @@ final class StatusItemController {
         SystemMonitor.shared.$snapshot
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                guard MenuBarMetric.anyEnabled(in: .standard) else { return }
+                let active = UserDefaults.standard.bool(forKey: DefaultsKey.menuBarReplaceMainIconWithTemperature)
+                    || MenuBarMetric.anyEnabled(in: .standard)
+                guard active else { return }
                 self?.refresh()
             }
             .store(in: &cancellables)
@@ -281,7 +283,9 @@ final class StatusItemController {
         let defaults = UserDefaults.standard
         let interval = Defaults.sanitizedMonitorInterval(defaults.integer(forKey: DefaultsKey.monitorInterval))
         SystemMonitor.shared.setInterval(seconds: interval)
-        SystemMonitor.shared.setMenuBarActive(MenuBarMetric.anyEnabled(in: defaults))
+        let active = defaults.bool(forKey: DefaultsKey.menuBarReplaceMainIconWithTemperature)
+            || MenuBarMetric.anyEnabled(in: defaults)
+        SystemMonitor.shared.setMenuBarActive(active)
     }
 
     private func syncTitleTimer(keepAwakeActive: Bool,
@@ -366,7 +370,8 @@ final class StatusItemController {
         let signal = updateAvailable || micBadgeActive
         let islandHides = MenuBarSpacingSupport.islandHidesStatusIcon(
             in: defaults, hiddenInFullscreen: islandHiddenInFullscreen) && !signal
-        let hidden = islandHides || MenuBarSpacingSupport.shouldHideStatusIcon(
+        let replaceWithTemp = defaults.bool(forKey: DefaultsKey.menuBarReplaceMainIconWithTemperature)
+        let hidden = islandHides || replaceWithTemp || MenuBarSpacingSupport.shouldHideStatusIcon(
             optionEnabled: optionEnabled,
             separateMetrics: separateMetrics,
             metricsEnabled: MenuBarMetric.anyEnabled(in: defaults),
@@ -377,12 +382,12 @@ final class StatusItemController {
         // just its image (which is all that item has). With Dynamic Island
         // standing in, the item goes whenever it has no text of its own.
         let mainItemHidden = (islandHides && button.attributedTitle.length == 0)
-            || MenuBarSpacingSupport.shouldHideMainStatusItem(
+            || (replaceWithTemp ? false : MenuBarSpacingSupport.shouldHideMainStatusItem(
                 optionEnabled: optionEnabled,
                 separateMetrics: separateMetrics,
                 metricItemsShown: renderedMetricItemCount,
                 renderedTitleLength: button.attributedTitle.length,
-                mustShowForSignal: signal || keepAwakeSignal)
+                mustShowForSignal: signal || keepAwakeSignal))
         mainItemHiddenByChoice = mainItemHidden
         let keepAwakeActive = KeepAwakeManager.shared.isActive
 
@@ -392,7 +397,8 @@ final class StatusItemController {
         let stateKey = [String(hidden), String(mainItemHidden), String(updateAvailable),
                         String(keepAwakeActive), KeepAwakeIconTint.current.rawValue,
                         KeepAwakeActiveIcon.current.rawValue, BlackHoleGlyph.chosenSymbolName,
-                        String(micBadgeActive)].joined(separator: "|")
+                        String(micBadgeActive), String(replaceWithTemp),
+                        replaceWithTemp ? button.attributedTitle.string : ""].joined(separator: "|")
         guard stateKey != lastIconStateKey else { return }
         lastIconStateKey = stateKey
 
@@ -487,6 +493,14 @@ final class StatusItemController {
         } else {
             removeMetricStatusItems(except: Set<String>())
             renderedMetricItemCount = 0
+        }
+        if defaults.bool(forKey: DefaultsKey.menuBarReplaceMainIconWithTemperature) {
+            let mainTempSegments = MenuBarRenderer.mainIconTemperatureSegments(for: snapshot, in: defaults)
+            let mainTempTitle = MenuBarRenderer.attributed(for: mainTempSegments, allowStacked: true)
+            if mainTempTitle.length > 0 {
+                if title.length > 0 { title.append(NSAttributedString(string: "  ")) }
+                title.append(mainTempTitle)
+            }
         }
         if !separateMetrics, !metrics.isEmpty {
             let metricsTitle = MenuBarRenderer.attributed(for: snapshot,

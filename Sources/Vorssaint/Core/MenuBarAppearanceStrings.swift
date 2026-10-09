@@ -14,6 +14,13 @@ struct MenuBarAppearanceStrings {
     let highColor: String
     let mediumFrom: String
     let highFrom: String
+    let replaceIconToggle: String
+    let replaceIconCaption: String
+    let temperatureLayout: String
+    let topSensor: String
+    let bottomSensor: String
+    let stacked: String
+    let sideBySide: String
 }
 
 extension FeatureStrings {
@@ -49,7 +56,14 @@ extension MenuBarAppearanceStrings {
         mediumColor: "Medium color",
         highColor: "High color",
         mediumFrom: "Medium from",
-        highFrom: "High from"
+        highFrom: "High from",
+        replaceIconToggle: "Replace menu bar icon with temperatures",
+        replaceIconCaption: "Displays live temperature readouts directly on the main menu bar icon",
+        temperatureLayout: "Temperature layout",
+        topSensor: "Top sensor",
+        bottomSensor: "Bottom sensor",
+        stacked: "Stacked",
+        sideBySide: "Side by side"
     )
 
     static let ptBR = MenuBarAppearanceStrings(
@@ -62,7 +76,14 @@ extension MenuBarAppearanceStrings {
         mediumColor: "Cor média",
         highColor: "Cor alta",
         mediumFrom: "Médio a partir de",
-        highFrom: "Alto a partir de"
+        highFrom: "Alto a partir de",
+        replaceIconToggle: "Substituir ícone da barra de menus por temperaturas",
+        replaceIconCaption: "Exibe leituras de temperatura em tempo real no ícone principal",
+        temperatureLayout: "Layout de temperatura",
+        topSensor: "Sensor superior",
+        bottomSensor: "Sensor inferior",
+        stacked: "Empilhado",
+        sideBySide: "Lado a lado"
     )
 
     static let tr = MenuBarAppearanceStrings(
@@ -75,7 +96,14 @@ extension MenuBarAppearanceStrings {
         mediumColor: "Orta renk",
         highColor: "Yüksek renk",
         mediumFrom: "Orta başlangıcı",
-        highFrom: "Yüksek başlangıcı"
+        highFrom: "Yüksek başlangıcı",
+        replaceIconToggle: "Menü çubuğu simgesini sıcaklıklarla değiştir",
+        replaceIconCaption: "Ana menü çubuğu simgesinde canlı sıcaklık değerlerini gösterir",
+        temperatureLayout: "Sıcaklık düzeni",
+        topSensor: "Üst sensör",
+        bottomSensor: "Alt sensör",
+        stacked: "Üst üste",
+        sideBySide: "Yan yana"
     )
 
     static let ru = MenuBarAppearanceStrings(
@@ -88,7 +116,14 @@ extension MenuBarAppearanceStrings {
         mediumColor: "Средний цвет",
         highColor: "Высокий цвет",
         mediumFrom: "Средний от",
-        highFrom: "Высокий от"
+        highFrom: "Высокий от",
+        replaceIconToggle: "Заменить иконку строки меню температурой",
+        replaceIconCaption: "Отображает текущую температуру прямо на главной иконке строки меню",
+        temperatureLayout: "Расположение температур",
+        topSensor: "Верхний датчик",
+        bottomSensor: "Нижний датчик",
+        stacked: "Столбцом",
+        sideBySide: "Рядом"
     )
 
     static let es = MenuBarAppearanceStrings(
@@ -101,7 +136,14 @@ extension MenuBarAppearanceStrings {
         mediumColor: "Color medio",
         highColor: "Color alto",
         mediumFrom: "Medio desde",
-        highFrom: "Alto desde"
+        highFrom: "Alto desde",
+        replaceIconToggle: "Reemplazar icono de la barra de menús por temperaturas",
+        replaceIconCaption: "Muestra temperaturas en tiempo real en el icono principal de la barra de menús",
+        temperatureLayout: "Diseño de temperatura",
+        topSensor: "Sensor superior",
+        bottomSensor: "Sensor inferior",
+        stacked: "Apilado",
+        sideBySide: "Lado a lado"
     )
 
     static let sk = MenuBarAppearanceStrings(
@@ -114,7 +156,14 @@ extension MenuBarAppearanceStrings {
         mediumColor: "Stredná farba",
         highColor: "Vysoká farba",
         mediumFrom: "Stredná od",
-        highFrom: "Vysoká od"
+        highFrom: "Vysoká od",
+        replaceIconToggle: "Nahradiť ikonu v lište teplota mi",
+        replaceIconCaption: "Zobrazuje živé hodnoty teplôt priamo v hlavnej ikone lišty",
+        temperatureLayout: "Rozloženie teplôt",
+        topSensor: "Horný snímač",
+        bottomSensor: "Dolný snímač",
+        stacked: "Nad sebou",
+        sideBySide: "Vedľa seba"
     )
 
     static let de = MenuBarAppearanceStrings(
@@ -127,7 +176,14 @@ extension MenuBarAppearanceStrings {
         mediumColor: "Mittlere Farbe",
         highColor: "Hohe Farbe",
         mediumFrom: "Mittel ab",
-        highFrom: "Hoch ab"
+        highFrom: "Hoch ab",
+        replaceIconToggle: "Menüleistensymbol durch Temperaturen ersetzen",
+        replaceIconCaption: "Zeigt Live-Temperaturen direkt auf dem Hauptsymbol der Menüleiste an",
+        temperatureLayout: "Temperatur-Layout",
+        topSensor: "Oberer Sensor",
+        bottomSensor: "Unterer Sensor",
+        stacked: "Gestapelt",
+        sideBySide: "Nebeneinander"
     )
 
     static let fr = MenuBarAppearanceStrings(
@@ -140,7 +196,14 @@ extension MenuBarAppearanceStrings {
         mediumColor: "Couleur moyenne",
         highColor: "Couleur élevée",
         mediumFrom: "Moyen à partir de",
-        highFrom: "Élevé à partir de"
+        highFrom: "Élevé à partir de",
+        replaceIconToggle: "Remplacer l’icône de la barre des menus par les températures",
+        replaceIconCaption: "Affiche en direct les températures sur l’icône principale de la barre des menus",
+        temperatureLayout: "Disposition des températures",
+        topSensor: "Capteur supérieur",
+        bottomSensor: "Capteur inférieur",
+        stacked: "Superposé",
+        sideBySide: "Côte à côte"
     )
 
     static let it = MenuBarAppearanceStrings(
@@ -153,7 +216,14 @@ extension MenuBarAppearanceStrings {
         mediumColor: "Colore medio",
         highColor: "Colore alto",
         mediumFrom: "Medio da",
-        highFrom: "Alto da"
+        highFrom: "Alto da",
+        replaceIconToggle: "Sostituisci l'icona della barra dei menu con le temperature",
+        replaceIconCaption: "Mostra le letture delle temperature in tempo reale sull'icona principale",
+        temperatureLayout: "Layout temperature",
+        topSensor: "Sensore superiore",
+        bottomSensor: "Sensore inferiore",
+        stacked: "Impilato",
+        sideBySide: "A fianco"
     )
 
     static let ja = MenuBarAppearanceStrings(
@@ -166,7 +236,14 @@ extension MenuBarAppearanceStrings {
         mediumColor: "中程度の色",
         highColor: "高負荷の色",
         mediumFrom: "中程度の開始",
-        highFrom: "高負荷の開始"
+        highFrom: "高負荷の開始",
+        replaceIconToggle: "メニューバーアイコンを温度表示に置き換える",
+        replaceIconCaption: "メインのメニューバーアイコンにリアルタイムの温度を表示します",
+        temperatureLayout: "温度のレイアウト",
+        topSensor: "上のセンサー",
+        bottomSensor: "下のセンサー",
+        stacked: "上下に配置",
+        sideBySide: "左右に配置"
     )
 
     static let ko = MenuBarAppearanceStrings(
@@ -179,7 +256,14 @@ extension MenuBarAppearanceStrings {
         mediumColor: "중간 색상",
         highColor: "높음 색상",
         mediumFrom: "중간 시작",
-        highFrom: "높음 시작"
+        highFrom: "높음 시작",
+        replaceIconToggle: "메뉴 막대 아이콘을 온도 표시로 교체",
+        replaceIconCaption: "기본 메뉴 막대 아이콘에 실시간 온도 측정값을 표시합니다",
+        temperatureLayout: "온도 레이아웃",
+        topSensor: "상단 센서",
+        bottomSensor: "하단 센서",
+        stacked: "수직 배치",
+        sideBySide: "수평 배치"
     )
 
     static let zhHans = MenuBarAppearanceStrings(
@@ -192,7 +276,14 @@ extension MenuBarAppearanceStrings {
         mediumColor: "中等颜色",
         highColor: "高负载颜色",
         mediumFrom: "中等起点",
-        highFrom: "高负载起点"
+        highFrom: "高负载起点",
+        replaceIconToggle: "用温度替换菜单栏图标",
+        replaceIconCaption: "在主菜单栏图标上直接显示实时温度读数",
+        temperatureLayout: "温度布局",
+        topSensor: "顶部传感器",
+        bottomSensor: "底部传感器",
+        stacked: "上下堆叠",
+        sideBySide: "左右并排"
     )
 
     static let zhTW = MenuBarAppearanceStrings(
@@ -205,7 +296,14 @@ extension MenuBarAppearanceStrings {
         mediumColor: "中等顏色",
         highColor: "高負載顏色",
         mediumFrom: "中等起點",
-        highFrom: "高負載起點"
+        highFrom: "高負載起點",
+        replaceIconToggle: "以溫度取代選單列圖示",
+        replaceIconCaption: "在主選單列圖示上直接顯示即時溫度讀數",
+        temperatureLayout: "溫度版面配置",
+        topSensor: "頂部感測器",
+        bottomSensor: "底部感測器",
+        stacked: "上下堆疊",
+        sideBySide: "左右並排"
     )
 
     static let zhHK = MenuBarAppearanceStrings(
@@ -218,7 +316,14 @@ extension MenuBarAppearanceStrings {
         mediumColor: "中等顏色",
         highColor: "高負載顏色",
         mediumFrom: "中等起點",
-        highFrom: "高負載起點"
+        highFrom: "高負載起點",
+        replaceIconToggle: "以溫度取代選單列圖示",
+        replaceIconCaption: "在主選單列圖示上直接顯示即時溫度讀數",
+        temperatureLayout: "溫度版面配置",
+        topSensor: "頂部感應器",
+        bottomSensor: "底部感應器",
+        stacked: "上下堆疊",
+        sideBySide: "左右並排"
     )
     static let uk = MenuBarAppearanceStrings(
         label: "Відображення використання",
@@ -230,6 +335,13 @@ extension MenuBarAppearanceStrings {
         mediumColor: "Середній колір",
         highColor: "Високий колір",
         mediumFrom: "Середній від",
-        highFrom: "Високий від"
+        highFrom: "Високий від",
+        replaceIconToggle: "Замінити іконку в смузі меню температурою",
+        replaceIconCaption: "Відображає температуру в реальному часі безпосередньо на головній іконці",
+        temperatureLayout: "Макет температури",
+        topSensor: "Верхній датчик",
+        bottomSensor: "Нижній датчик",
+        stacked: "Стовпчиком",
+        sideBySide: "Поруч"
     )
 }

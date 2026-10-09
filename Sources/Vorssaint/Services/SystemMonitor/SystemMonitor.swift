@@ -566,6 +566,23 @@ final class SystemMonitor: ObservableObject {
             (panelNeedsPower && defaults.bool(forKey: DefaultsKey.monitorPwrTemperature))
                 || menuPanelNeeds.batteryTemperature
                 || defaults.bool(forKey: DefaultsKey.menuBarBatteryTemperature) || alertBatteryTemperature)
+
+        if defaults.bool(forKey: DefaultsKey.menuBarReplaceMainIconWithTemperature) {
+            let topKey = defaults.string(forKey: DefaultsKey.menuBarMainIconTopMetric) ?? "cpuTemperature"
+            let bottomKey = defaults.string(forKey: DefaultsKey.menuBarMainIconBottomMetric) ?? "gpuTemperature"
+            for metricKey in [topKey, bottomKey] {
+                switch metricKey {
+                case "cpuTemperature", "cpu":
+                    plan.needCPUTemperature = true
+                case "gpuTemperature", "gpu":
+                    plan.needGPUTemperature = true
+                case "batteryTemperature", "battery":
+                    if hasInternalBattery { plan.needBatteryTemperature = true }
+                default:
+                    plan.needCPUTemperature = true
+                }
+            }
+        }
         if defaults.bool(forKey: AppFeature.fanControl.availabilityKey),
            Self.fanTelemetryAvailable {
             plan.needFanSpeed = fullMonitorVisible || menuPanelNeeds.fanSpeed

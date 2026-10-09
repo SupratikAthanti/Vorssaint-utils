@@ -18,6 +18,10 @@ struct MonitorSettings: View {
     @AppStorage(DefaultsKey.menuBarMetricSpacing) private var metricSpacing = "standard"
     @AppStorage(DefaultsKey.menuBarMetricAppearance) private var metricAppearance = "values"
     @AppStorage(DefaultsKey.menuBarHideIconWithMetrics) private var hideIconWithMetrics = false
+    @AppStorage(DefaultsKey.menuBarReplaceMainIconWithTemperature) private var replaceMainIconWithTemp = false
+    @AppStorage(DefaultsKey.menuBarMainIconTemperatureLayout) private var mainIconLayout = "stacked"
+    @AppStorage(DefaultsKey.menuBarMainIconTopMetric) private var mainIconTopMetric = MenuBarMetric.cpuTemperature.rawValue
+    @AppStorage(DefaultsKey.menuBarMainIconBottomMetric) private var mainIconBottomMetric = MenuBarMetric.gpuTemperature.rawValue
     @AppStorage(DefaultsKey.monitorInterval) private var interval = 2
     @AppStorage(DefaultsKey.monitorGraphScale) private var graphScale = true
     @AppStorage(DefaultsKey.temperatureUnit) private var temperatureUnit = TemperatureUnit.celsius.rawValue
@@ -145,6 +149,40 @@ struct MonitorSettings: View {
                         caption: appearance.allowsCombinedTemperatures
                             ? l10n.s.monitorSeparateMenuBarMetricsCaption : nil) {
                 Toggle(l10n.s.monitorSeparateMenuBarMetrics, isOn: $separateMetrics).labelsHidden()
+            }
+            Divider()
+            SettingsRow(symbol: "thermometer.medium", title: appearanceStrings.replaceIconToggle,
+                        caption: appearanceStrings.replaceIconCaption) {
+                Toggle(appearanceStrings.replaceIconToggle, isOn: $replaceMainIconWithTemp).labelsHidden()
+            }
+            if replaceMainIconWithTemp {
+                SettingsRow(symbol: "rectangle.split.2x1", title: appearanceStrings.temperatureLayout) {
+                    Picker(appearanceStrings.temperatureLayout, selection: $mainIconLayout) {
+                        Text(appearanceStrings.stacked).tag(MainIconTemperatureLayout.stacked.rawValue)
+                        Text(appearanceStrings.sideBySide).tag(MainIconTemperatureLayout.sideBySide.rawValue)
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    .fixedSize()
+                }
+                SettingsRow(symbol: "arrow.up.square", title: appearanceStrings.topSensor) {
+                    Picker(appearanceStrings.topSensor, selection: $mainIconTopMetric) {
+                        Text(l10n.s.monitorShowCPUTemperature).tag(MenuBarMetric.cpuTemperature.rawValue)
+                        Text(l10n.s.monitorShowGPUTemperature).tag(MenuBarMetric.gpuTemperature.rawValue)
+                        Text(l10n.s.monitorShowBatteryTemperature).tag(MenuBarMetric.batteryTemperature.rawValue)
+                    }
+                    .pickerStyle(.menu)
+                    .labelsHidden()
+                }
+                SettingsRow(symbol: "arrow.down.square", title: appearanceStrings.bottomSensor) {
+                    Picker(appearanceStrings.bottomSensor, selection: $mainIconBottomMetric) {
+                        Text(l10n.s.monitorShowCPUTemperature).tag(MenuBarMetric.cpuTemperature.rawValue)
+                        Text(l10n.s.monitorShowGPUTemperature).tag(MenuBarMetric.gpuTemperature.rawValue)
+                        Text(l10n.s.monitorShowBatteryTemperature).tag(MenuBarMetric.batteryTemperature.rawValue)
+                    }
+                    .pickerStyle(.menu)
+                    .labelsHidden()
+                }
             }
         }
     }

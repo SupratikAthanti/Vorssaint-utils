@@ -396,6 +396,10 @@ enum DefaultsKey {
     static let menuBarUsageBarHighThreshold = "menuBarUsageBarHighThreshold" // percent
     static let menuBarHideIconWithMetrics = "menuBarHideIconWithMetrics" // glyph hides while metrics render in the main item
     static let menuBarIconSymbol = "menuBarIconSymbol" // system symbol name drawn instead of the glyph; empty keeps the glyph
+    static let menuBarReplaceMainIconWithTemperature = "menuBarReplaceMainIconWithTemperature" // replace main icon with temperature readout
+    static let menuBarMainIconTemperatureLayout = "menuBarMainIconTemperatureLayout" // stacked | sideBySide
+    static let menuBarMainIconTopMetric = "menuBarMainIconTopMetric" // metric rawValue for top/first sensor
+    static let menuBarMainIconBottomMetric = "menuBarMainIconBottomMetric" // metric rawValue for bottom/second sensor
     static let menuBarMetricOrder = "menuBarMetricOrder" // comma-separated MenuBarMetric raw values
     static let menuBarCombineTemperatures = "menuBarCombineTemperatures" // usage/charge + temperature in one block when possible
     static let menuBarSeparateMetrics = "menuBarSeparateMetrics" // one status item per active metric
@@ -1037,6 +1041,19 @@ enum KeepAwakeIconTint: String, CaseIterable, Identifiable {
     }
 }
 
+enum MainIconTemperatureLayout: String, CaseIterable, Identifiable {
+    case stacked, sideBySide
+
+    var id: String { rawValue }
+
+    static let defaultLayout = MainIconTemperatureLayout.stacked
+
+    static var current: MainIconTemperatureLayout {
+        let raw = UserDefaults.standard.string(forKey: DefaultsKey.menuBarMainIconTemperatureLayout) ?? ""
+        return MainIconTemperatureLayout(rawValue: raw) ?? defaultLayout
+    }
+}
+
 enum KeepAwakeActiveIcon: String, CaseIterable, Identifiable {
     case vorssaint, coffee, eye, moon, light
 
@@ -1585,6 +1602,10 @@ enum Defaults {
         DefaultsKey.menuBarUsageBarHighThreshold: 90,
         DefaultsKey.menuBarHideIconWithMetrics: false,
         DefaultsKey.menuBarIconSymbol: "",
+        DefaultsKey.menuBarReplaceMainIconWithTemperature: false,
+        DefaultsKey.menuBarMainIconTemperatureLayout: MainIconTemperatureLayout.defaultLayout.rawValue,
+        DefaultsKey.menuBarMainIconTopMetric: "cpuTemperature",
+        DefaultsKey.menuBarMainIconBottomMetric: "gpuTemperature",
         DefaultsKey.windowLayoutHiddenActions: "",
         DefaultsKey.windowLayoutWindowGap: 0,
         DefaultsKey.windowLayoutScreenGap: 0,

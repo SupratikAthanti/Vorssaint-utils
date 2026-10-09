@@ -433,6 +433,10 @@ if (( TEST )); then
         Sources/Vorssaint/UI/Settings/FeatureVisibilitySupport.swift
         Sources/Vorssaint/UI/Settings/SettingsWindow.swift
         Sources/Vorssaint/Core/SettingsNavigationStrings.swift
+        Sources/Vorssaint/App/MenuBarRenderer.swift
+        Sources/Vorssaint/Services/SystemMonitor/SystemMonitor.swift
+        Sources/Vorssaint/App/StatusItemController.swift
+        Sources/Vorssaint/App/StatusItemPlacementSupport.swift
         Sources/Vorssaint/App/MenuBarSpacingSupport.swift
         Sources/Vorssaint/App/MenuBarAllowanceSupport.swift
         Sources/Vorssaint/App/ReopenRequestSupport.swift

@@ -707,6 +707,42 @@ enum MenuBarRenderer {
         return segments
     }
 
+    static func mainIconTemperatureSegments(for snapshot: SystemSnapshot,
+                                             in defaults: UserDefaults = .standard) -> [MenuBarSegment] {
+        let topKey = defaults.string(forKey: DefaultsKey.menuBarMainIconTopMetric) ?? MenuBarMetric.cpuTemperature.rawValue
+        let bottomKey = defaults.string(forKey: DefaultsKey.menuBarMainIconBottomMetric) ?? MenuBarMetric.gpuTemperature.rawValue
+        let layout = defaults.string(forKey: DefaultsKey.menuBarMainIconTemperatureLayout) ?? MainIconTemperatureLayout.defaultLayout.rawValue
+
+        let topVal = temperatureValue(for: topKey, in: snapshot)
+        let bottomVal = temperatureValue(for: bottomKey, in: snapshot)
+
+        let topBlock = MenuBarSegment.metricBlock(label: "", value: topVal, minimumValue: "999°", style: .dense, pressure: nil)
+        let bottomBlock = MenuBarSegment.metricBlock(label: "", value: bottomVal, minimumValue: "999°", style: .dense, pressure: nil)
+
+        if layout == MainIconTemperatureLayout.sideBySide.rawValue {
+            return [topBlock, .text(" "), bottomBlock]
+        } else {
+            return [topBlock, .text("\n"), bottomBlock]
+        }
+    }
+
+    private static func temperatureValue(for metricKey: String, in snapshot: SystemSnapshot) -> String {
+        let metric = MenuBarMetric(rawValue: metricKey) ?? .cpuTemperature
+        let celsius: Double?
+        switch metric {
+        case .cpuTemperature, .cpu:
+            celsius = snapshot.cpuTemperature
+        case .gpuTemperature, .gpu:
+            celsius = snapshot.gpuTemperature
+        case .batteryTemperature, .battery:
+            celsius = snapshot.batteryTemperature
+        default:
+            celsius = snapshot.cpuTemperature
+        }
+        guard let celsius else { return "--°" }
+        return temperatureCompact(celsius)
+    }
+
     /// The colored attributed string for the status item. Only alert/status dots
     /// get fixed colors; text and image-backed metric blocks use dynamic system
     /// colors so they follow the menu bar appearance over each wallpaper.
@@ -714,9 +750,17 @@ enum MenuBarRenderer {
                            metrics: [MenuBarMetric],
                            allowStacked: Bool = true,
                            linePrefix: String = "") -> NSAttributedString {
+        return attributed(for: segments(for: snapshot, metrics: metrics, allowStacked: allowStacked),
+                          allowStacked: allowStacked,
+                          linePrefix: linePrefix)
+    }
+
+    static func attributed(for segments: [MenuBarSegment],
+                           allowStacked: Bool = true,
+                           linePrefix: String = "") -> NSAttributedString {
         let result = NSMutableAttributedString()
-        let stacked = usesStackedLayout(for: snapshot, metrics: metrics, allowStacked: allowStacked)
-        for segment in segments(for: snapshot, metrics: metrics, allowStacked: allowStacked) {
+        let stacked = segments.contains { if case .text("\n") = $0 { return true }; return false }
+        for segment in segments {
             switch segment {
             case let .text(string):
                 let rendered = string == "\n" && !linePrefix.isEmpty ? "\n" + linePrefix : string
