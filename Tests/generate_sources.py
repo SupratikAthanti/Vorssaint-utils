@@ -132,7 +132,14 @@ def main():
               "    private func showPopover(", "    func popoverWillClose(", "    func popoverDidClose(",
               "    private func releasePanelResources(", "    private func anchorAfterForeignClose(",
               "    private func reopenPanelAfterForeignClose(", "    private func shouldDismissPopover(",
-              "    private func closePopoverNow("])
+              "    private var popoverIsOpen:", "    private func showMetricPanel(",
+              "    private func beginPanelActivationTracking(", "    private func updatePanelActivationSource(",
+              "    private func endPanelActivationTracking(", "    private func returnActivation(",
+              "    private func runPopoverCloseCompletions(",
+              "    private func closePopoverNow(", "    private func fadeOutPopover(",
+              "    private func finishPopoverFadeOut(", "    private func closePopoverWithoutAnimation("])
+          .replace("func endPanelActivationTracking()", "@discardableResult func endPanelActivationTracking()")
+          + "func closePopover(animated: Bool = true, reason: PanelCloseReason) { closePopoverNow(animated: animated, reason: reason, completion: nil) }\n"
           + "var popoverAnchor: PanelAnchor?\nvar lastGoodPanelAnchor: PanelAnchor?\n"
           + "}\n}\n")
     write("MenuPanelKey.swift", "import Foundation\nimport Carbon.HIToolbox\n"
@@ -267,7 +274,8 @@ def main():
           + declaration(clipboard, "    @Published private(set) var entries:")
           + declaration(clipboard, "    func updateText(")
           + "".join(declaration(clipboard, prefix).replace("private ", "", 1) for prefix in [
-              "    func togglePin(", "    func clearRecent(", "    func copy(_ entry:", "    func copy(_ selectedEntries:", "    private func touch(",
+              "    func togglePin(", "    func clearRecent(", "    var recentEntries:", "    var recentEntriesSnapshot:",
+              "    func copy(_ entry:", "    func copy(_ selectedEntries:", "    private func touch(",
               "    private var firstRecentIndex:", "    private func normalizeEntryOrder(",
               "    func filteredEntries(", "    var filteredQuickEntries:", "    var selectedQuickEntry:",
               "    func moveQuickSelection(", "    func removeSelectedQuickEntries(",
@@ -347,6 +355,16 @@ def main():
           + declaration("Sources/Vorssaint/Services/Clipboard/ClipboardHistoryService.swift",
                         "    private func pasteIntoPreviousApp(").replace("private func", "func", 1)
           + "}\n")
+    write("ClipboardPanelPlacement.swift", "import AppKit\n"
+          + "extension ClipboardFeatureTests.PanelPlacementHost {\n"
+          + "".join(declaration(clipboard, prefix).replace("private func", "func", 1) for prefix in [
+              "    private func refreshQuickLayout(", "    private func panelMinimumContentSize(",
+              "    private func preferredPanelSize(", "    private func savePanelSize(",
+              "    private func position("])
+          + "}\nextension ClipboardFeatureTests {\n"
+          + declaration(clipboard, "private final class ClipboardPanelSizeLimit").replace(
+              "private final class", "final class", 1)
+          + "}\n")
     paste_plain = "Sources/Vorssaint/Services/QuickTools/PastePlainService.swift"
     write("PastePlain.swift", "import AppKit\nimport UniformTypeIdentifiers\n"
           + "extension PastePlainTests {\nfinal class Service: Fixture {\n"
@@ -413,6 +431,24 @@ def main():
           + "}\n}\nextension UninstallerFlowTests.Finder {\n"
           + declaration("Sources/Vorssaint/Services/Finder/FinderCutPaste.swift", "    static func selectionURLs(")
           + "}\n")
+    write("UninstallerCommandBarCleanup.swift", "import Foundation\n"
+          + "extension UninstallerCommandBarCleanupTests {\n"
+          + declaration(uninstall, "    enum Phase:")
+          + "final class Uninstaller: UninstallerState {\n"
+          + "".join(declaration(uninstall, prefix).replace("private func", "func", 1)
+                    .replace("private static func", "static func", 1) for prefix in [
+                        "    var selectedHomebrewPackage:", "    var isRemovingWithHomebrew:",
+                        "    var isRemoving: Bool",
+                        "    func setInclude(", "    private func finishRemovalAfterHomebrew(",
+                        "    private static func removeCommandBarState("])
+          + "}\nfinal class Service: ServiceState {\nstatic let shared = Service()\n"
+          + "".join(declaration(bar, prefix).replace("private var", "var", 1)
+                    .replace("private func", "func", 1) for prefix in [
+                        "    var rowShortcuts:", "    private var storedAliases:",
+                        "    private var storedPins:", "    private var storedHiddenKeys:",
+                        "    private func syncRowHotkeys(", "    func hasStoredApplicationState(",
+                        "    func removeApplicationState("])
+          + "}\n}\n")
     dock = "Sources/Vorssaint/Services/DockPreview/DockPreviewService.swift"
     write("DockPreviewScroll.swift", "import AppKit\nimport SwiftUI\n"
           + "extension DockPreviewScrollTests {\n"
@@ -647,6 +683,7 @@ def main():
           + declaration(playback_adapter, "    static func readPlaybackState(")
           + declaration(playback_adapter, "    private static func currentPlayerPID(").replace("private static", "static", 1)
           + declaration(playback_adapter, "    static func send(")
+          + declaration(playback_adapter, "    private static func resolvedBundleIdentifier(").replace("private static", "static", 1)
           + declaration(playback_adapter, "    private static func makeTarget(").replace("private static", "static", 1)
           + declaration(adapter_entry, "private func sendPlaybackCommand(").replace("private func", "static func", 1)
           + declaration(adapter_entry, "func encodedReply(").replace("func encodedReply", "static func encodedReply", 1)
@@ -1222,6 +1259,7 @@ def main():
           + "extension ScreenshotAutoShelfTests {\n@MainActor final class Service: State {\n"
           + "".join(declaration(screenshot_service, prefix).replace("private func", "func", 1)
                     for prefix in ["    private func autoShelve(", "    private func unshelve(",
+                                   "    private func editFromPreview(",
                                    "    private func cancelAutoShelf()"])
           + "}\n}\n")
     write("ScreenshotPreviewHover.swift", "import Foundation\n"
@@ -1744,6 +1782,12 @@ def main():
                     .replace("private func", "func", 1)
                     .replace("func read(", "@discardableResult func read(", 1)
                     for prefix in ["    private func start(", "    private func read(", "    private func filesChanged("])
+          + "}\n}\n")
+
+    write("AgentUsagePolling.swift", "import Foundation\n"
+          + "extension AgentUsagePollingTests {\nfinal class Host: Fixture {\n"
+          + declaration("Sources/Vorssaint/Services/AgentUsage/AgentUsageService.swift",
+                        "    private func syncPolling(").replace("private func", "func", 1)
           + "}\n}\n")
 
     # Same-file extensions can exercise the private AppKit content view without
