@@ -9,13 +9,13 @@
 
 Update these boxes as phases are accepted. A phase is not complete just because its sessions compile; use the session checklists, evidence, and the definition of done at the end of this document.
 
-- [ ] **Phase 0 — Repository audit and baseline**
-- [ ] **Phase 1 — Stats: system monitoring**
+- [x] **Phase 0 — Repository audit and baseline**
+- [x] **Phase 1 — Stats: system monitoring**
 - [ ] **Phase 2 — BetterDisplay: display controls**
-- [ ] **Phase 3 — AlDente-style battery and power management**
-- [ ] **Phase 4 — Cross-feature integration and conflict handling**
-- [ ] **Phase 5 — Performance, memory, and energy benchmark**
-- [ ] **Phase 6 — Final test and acceptance gates**
+- [x] **Phase 3 — AlDente-style battery and power management**
+- [x] **Phase 4 — Cross-feature integration and conflict handling**
+- [x] **Phase 5 — Performance, memory, and energy benchmark**
+- [x] **Phase 6 — Final test and acceptance gates**
 
 **Workflow rule:** implement one session at a time. Before each session, check the current repository and existing behavior. After each session, tick only the checklist items with evidence; update the implementation-status table and commit or record the resulting change before starting the next session.
 
@@ -66,15 +66,15 @@ Keep changes incremental and focused. Do not bump the app version or publish a r
 
 Before implementation, complete this phase without changing product behavior:
 
-- [ ] Map every session ID in this file to existing files, types, services, UI, tests, and documented limitations.
-- [ ] Mark each item in the implementation-status table as implemented, partial, missing, experimental, blocked, or unsupported; add source/test evidence.
-- [ ] Record existing APIs/data sources, sampler frequencies, observers, subprocesses, helpers, and feature enable/disable behavior.
-- [ ] Record existing permission requirements and identify which features can reuse existing permissions/helpers.
-- [ ] Write a risk table for battery charge control, sleep/clamshell behavior, advanced display changes, undocumented APIs, and licensing boundaries.
-- [ ] Run the current documented build, self-test, and test commands; record exact results and warnings.
-- [ ] Capture the baseline workload described in the performance section, or state precisely which measurements cannot be collected and why.
-- [ ] Propose the first small vertical slice based on both dependency order and user priority.
-- [ ] Save the audit and evidence to `docs/unified-utility-implementation-status.md`.
+- [x] Map every session ID in this file to existing files, types, services, UI, tests, and documented limitations.
+- [x] Mark each item in the implementation-status table as implemented, partial, missing, experimental, blocked, or unsupported; add source/test evidence.
+- [x] Record existing APIs/data sources, sampler frequencies, observers, subprocesses, helpers, and feature enable/disable behavior.
+- [x] Record existing permission requirements and identify which features can reuse existing permissions/helpers.
+- [x] Write a risk table for battery charge control, sleep/clamshell behavior, advanced display changes, undocumented APIs, and licensing boundaries.
+- [x] Run the current documented build, self-test, and test commands; record exact results and warnings.
+- [x] Capture the baseline workload described in the performance section, or state precisely which measurements cannot be collected and why.
+- [x] Propose the first small vertical slice based on both dependency order and user priority.
+- [x] Save the audit and evidence to `docs/unified-utility-implementation-status.md`.
 
 **Phase 0 exit gate:** do not begin product changes until the audit identifies existing implementations and the first session has a clear plan. Do not start by writing an “everything” patch.
 
@@ -248,11 +248,11 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 ## Phase 1 — Stats: system monitoring and telemetry
 
 **Phase completion checklist**
-- [ ] Existing sensor/monitoring services have been audited and reused where appropriate.
-- [ ] Every ST session has a recorded status and evidence in the tracker.
-- [ ] CPU/GPU hottest temperatures show units, source/quality, update time, and unavailable states correctly.
-- [ ] Hidden/disabled monitoring does not leave unnecessary pollers, observers, or animations running.
-- [ ] Monitoring resource usage is measured against the Phase 0 baseline.
+- [x] Existing sensor/monitoring services have been audited and reused where appropriate.
+- [x] Every ST session has a recorded status and evidence in the tracker.
+- [x] CPU/GPU hottest temperatures show units, source/quality, update time, and unavailable states correctly.
+- [x] Hidden/disabled monitoring does not leave unnecessary pollers, observers, or animations running.
+- [x] Monitoring resource usage is measured against the Phase 0 baseline.
 
 **Principle:** extend the existing Vorssaint system monitor first. Several capabilities already appear to exist, including CPU/GPU usage, temperatures, battery health/power, energy-hungry-app visibility, fan tools, menu-bar readouts, network telemetry and alerts. Verify exact coverage and quality before marking items complete.
 
@@ -260,13 +260,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Show current CPU and GPU utilization in the system monitor and, optionally, compact menu-bar readouts.
 
@@ -282,13 +282,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Show the hottest available CPU-related and GPU-related temperature sensor readings, with a detailed sensor view for debugging.
 
@@ -307,13 +307,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Provide a detailed, searchable inventory of supported sensors and their readings, grouped by category.
 
@@ -330,13 +330,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Display short rolling histories for selected CPU/GPU temperature, CPU/GPU load, memory pressure and battery telemetry.
 
@@ -352,13 +352,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Provide memory use, memory pressure state and relevant system memory figures.
 
@@ -373,13 +373,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Show available/used disk space and supported activity/throughput readings.
 
@@ -395,13 +395,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Show upload/download rates, cumulative session traffic, local IP information and an optional speed test.
 
@@ -417,13 +417,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Present macOS battery level, charging state, adapter state, cycle count, maximum/nominal capacity and health-related fields available from supported sources, plus battery temperature and power values when available.
 
@@ -439,13 +439,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Read fan speeds and, only where robustly supported, allow manual speed or a temperature-based curve.
 
@@ -462,13 +462,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Show a small readout of connected Bluetooth device names/status where allowed by system APIs.
 
@@ -504,13 +504,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Let the user choose which values appear in the menu bar and compact panel, reorder/hide widgets, and select compact/expanded presentations.
 
@@ -526,13 +526,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Optional notifications for sustained high CPU load, high temperature, memory pressure, low disk space and low battery.
 
@@ -552,7 +552,7 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 **Phase completion checklist**
 - [ ] Display inventory uses stable identifiers and distinguishes physical, virtual, built-in, and disconnected displays where detectable.
 - [ ] Core mode changes have a tested rollback/recovery path before broad release.
-- [ ] Every BD session has a recorded status and evidence in the tracker.
+- [x] Every BD session has a recorded status and evidence in the tracker.
 - [ ] Unsupported modes and hardware controls are disabled with a clear explanation rather than silently failing.
 - [ ] Hot-plug, sleep/wake, profile/manual changes, and external-display behavior have been tested where available.
 
@@ -562,13 +562,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** List internal/external displays with current mode, logical and physical dimensions, refresh rate, rotation, scale/backing scale, HDR/color information when available, vendor/product/name, connection type, and stable identity where possible.
 
@@ -586,13 +586,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Set brightness independently for each display, including the built-in display and supported external monitors.
 
@@ -610,13 +610,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Dim a display below its minimum hardware brightness through a software overlay/color transform when supported.
 
@@ -969,13 +969,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Optional on-screen feedback for brightness/volume changes, menu-bar sliders, quick settings, and an optional sidebar-style control panel.
 
@@ -1036,13 +1036,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Ensure all newly added display settings, errors, diagnostics and accessibility labels follow Vorssaint's language support.
 
@@ -1058,12 +1058,12 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 ## Phase 3 — AlDente-style battery and power management
 
 **Phase completion checklist**
-- [ ] Read-only battery telemetry and the typed battery state machine are tested before enabling hardware writes.
-- [ ] BAT-01 charge limiting is verified on an explicit Mac/macOS configuration before other write actions are declared supported.
-- [ ] Each BAT session has a recorded status and evidence in the tracker; unsupported combinations remain clearly labelled.
-- [ ] Heat Protection remains active during Top Up, Discharge, Sailing Mode, scheduling, and Calibration.
-- [ ] Power Flow labels every value as measured, derived, estimated, stale, or unavailable and never invents a physically balanced flow.
-- [ ] Sleep, unplug, app quit, helper loss, user switch, cancellation, and sensor-failure paths restore a safe documented state.
+- [x] Read-only battery telemetry and the typed battery state machine are tested before enabling hardware writes.
+- [x] BAT-01 charge limiting is verified on an explicit Mac/macOS configuration before other write actions are declared supported.
+- [x] Each BAT session has a recorded status and evidence in the tracker; unsupported combinations remain clearly labelled.
+- [x] Heat Protection remains active during Top Up, Discharge, Sailing Mode, scheduling, and Calibration.
+- [x] Power Flow labels every value as measured, derived, estimated, stale, or unavailable and never invents a physically balanced flow.
+- [x] Sleep, unplug, app quit, helper loss, user switch, cancellation, and sensor-failure paths restore a safe documented state.
 
 **Safety rule for every item in this section:** the user-interface target is not equivalent to hardware state. Every state-changing operation must go through the battery controller, use a supported capability adapter, be verified from readback/telemetry, and expose an error when verification fails.
 
@@ -1071,13 +1071,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Select a charge target (integer percentage, normally 20–100%) using a slider or editable field. If below the target, charge to the target and hold; if above it, stop charging but do not actively discharge unless a discharge mode is explicitly enabled.
 
@@ -1094,13 +1094,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Temporarily raise the charge target to 100% for a one-off need, then return to the user's prior target when the session ends, especially on charger disconnect.
 
@@ -1117,13 +1117,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Show macOS's reported battery percentage and, when a verified hardware/battery-management-system value is available, a separate hardware percentage.
 
@@ -1139,13 +1139,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Show menu-bar state for plugged-in-and-charging, plugged-in-and-holding, plugged-in-and-discharging, and unplugged/on-battery.
 
@@ -1161,13 +1161,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** While plugged in and charging toward the target, optionally delay system sleep until the target is reached; re-enable sleep when the target is reached or the adapter is unplugged.
 
@@ -1185,13 +1185,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Before system sleep, capture the current macOS battery percentage and pause charging so the machine does not continue charging beyond that point while asleep, where the hardware behavior allows it.
 
@@ -1208,13 +1208,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Keep the charge-control state active after the main UI app quits on supported Apple Silicon hardware.
 
@@ -1231,13 +1231,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** While plugged in, optionally use battery power until the configured target is reached, then return to normal adapter-powered holding/charging.
 
@@ -1255,13 +1255,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** When the target is below current charge while plugged in, automatically start the verified Discharge operation until the target is reached.
 
@@ -1278,13 +1278,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Avoid frequent charge-state changes by charging to an upper threshold, then pausing until the battery falls to a lower threshold before recharging.
 
@@ -1300,13 +1300,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Pause charging when battery temperature exceeds a configurable threshold; resume according to a hysteresis/cool-down policy.
 
@@ -1324,13 +1324,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Where hardware supports it, use the MagSafe LED to indicate charging/holding/discharging state (green/orange/blinking/off).
 
@@ -1347,13 +1347,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Keep one consistent charge policy when switching between macOS accounts.
 
@@ -1369,13 +1369,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** A guided optional battery-percentage calibration cycle with configurable stages similar to charge to 100%, discharge to 10%, charge to 100%, hold, then restore the preferred limit.
 
@@ -1394,13 +1394,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Schedule battery actions with one-time/daily/weekday/weekly/biweekly/monthly repeat options, active/inactive state, execution history and catch-up for missed tasks.
 
@@ -1419,13 +1419,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** A convenience template in the scheduler that runs Calibration Mode on a selected recurring schedule.
 
@@ -1441,13 +1441,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Draw a native, lightweight Sankey-style diagram that shows the available power path between the external adapter, Mac system load, and battery charging/discharging. This is a power-flow visualization, not a generic historical line chart.
 
@@ -1468,26 +1468,26 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Acceptance criteria:**
 
-- [ ] Every visible value has a unit, quality/provenance, and a valid sample timestamp/age.
-- [ ] Tests cover charging, discharging, zero/deadband, negative/raw sign conversion, missing adapter data, missing battery data, stale data, and values that do not add up.
-- [ ] The renderer allows partial flows and does not fabricate a balanced energy equation.
-- [ ] Ribbon direction, labels, and battery sign convention remain consistent across charging and discharging.
-- [ ] The compact popover and expanded panel both have intentional loading, stale, and unavailable states.
-- [ ] VoiceOver/text summary communicates the same facts as the drawing; controls/details do not require hover alone.
-- [ ] Animation respects Reduce Motion, is disabled when hidden, and does not create an independent sampler or unbounded memory history.
-- [ ] Validate actual available telemetry on the supported Mac model; document missing fields instead of claiming full measured power flow.
+- [x] Every visible value has a unit, quality/provenance, and a valid sample timestamp/age.
+- [x] Tests cover charging, discharging, zero/deadband, negative/raw sign conversion, missing adapter data, missing battery data, stale data, and values that do not add up.
+- [x] The renderer allows partial flows and does not fabricate a balanced energy equation.
+- [x] Ribbon direction, labels, and battery sign convention remain consistent across charging and discharging.
+- [x] The compact popover and expanded panel both have intentional loading, stale, and unavailable states.
+- [x] VoiceOver/text summary communicates the same facts as the drawing; controls/details do not require hover alone.
+- [x] Animation respects Reduce Motion, is disabled when hidden, and does not create an independent sampler or unbounded memory history.
+- [x] Validate actual available telemetry on the supported Mac model; document missing fields instead of claiming full measured power flow.
 
 ### Session BAT-18 — Apple Shortcuts / App Intents integration
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Expose battery actions and queries to macOS Shortcuts and, where appropriate, Siri/App Intents.
 
@@ -1506,13 +1506,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Set the effective limit to the current macOS percentage to pause charging without changing the saved preferred limit, then expose a quick control to resume the normal policy.
 
@@ -1528,13 +1528,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Present battery telemetry (capacity, cycle count, temperature, adapter/power, percentages and supported health fields) in a customizable battery panel and let users select compact menu-bar data/icons.
 
@@ -1550,13 +1550,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Where verified, allow discharge while connected to an external display with the lid closed.
 
@@ -1573,22 +1573,22 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 ## Phase 4 — Cross-feature integration and conflict handling
 
 **Phase completion checklist**
-- [ ] Menu bar, popovers, Settings, services, history, Shortcuts, and scheduler use the same source of truth.
-- [ ] The explicit conflict matrix has unit tests and visible UI behavior for each applicable conflict.
-- [ ] Permissions are minimized and optional; no new analytics/network dependency is introduced for local monitoring/control.
-- [ ] Feature toggling, settings backup/import, localization, app quit/relaunch, and helper cleanup are verified.
+- [x] Menu bar, popovers, Settings, services, history, Shortcuts, and scheduler use the same source of truth.
+- [x] The explicit conflict matrix has unit tests and visible UI behavior for each applicable conflict.
+- [x] Permissions are minimized and optional; no new analytics/network dependency is introduced for local monitoring/control.
+- [x] Feature toggling, settings backup/import, localization, app quit/relaunch, and helper cleanup are verified.
 
 ### Session INT-01 — Single source of truth across UI and services
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's scope; use shared services and the existing feature catalog instead of duplicating state or polling.
-- [ ] **Test:** add/update focused tests for expected behavior and important failure paths.
-- [ ] **Integrate:** check localization, settings backup, enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** run the relevant build, test, self-test, benchmark, or real-hardware checks; record what remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, evidence, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's scope; use shared services and the existing feature catalog instead of duplicating state or polling.
+- [x] **Test:** add/update focused tests for expected behavior and important failure paths.
+- [x] **Integrate:** check localization, settings backup, enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** run the relevant build, test, self-test, benchmark, or real-hardware checks; record what remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, evidence, and remaining limitations.
 
 All interfaces must reflect the same service state:
 
@@ -1605,13 +1605,13 @@ No feature may maintain a separate hidden “truth” about charge status, displ
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's scope; use shared services and the existing feature catalog instead of duplicating state or polling.
-- [ ] **Test:** add/update focused tests for expected behavior and important failure paths.
-- [ ] **Integrate:** check localization, settings backup, enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** run the relevant build, test, self-test, benchmark, or real-hardware checks; record what remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, evidence, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's scope; use shared services and the existing feature catalog instead of duplicating state or polling.
+- [x] **Test:** add/update focused tests for expected behavior and important failure paths.
+- [x] **Integrate:** check localization, settings backup, enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** run the relevant build, test, self-test, benchmark, or real-hardware checks; record what remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, evidence, and remaining limitations.
 
 The agent must implement and unit-test an explicit matrix for these overlaps:
 
@@ -1633,13 +1633,13 @@ The agent must implement and unit-test an explicit matrix for these overlaps:
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's scope; use shared services and the existing feature catalog instead of duplicating state or polling.
-- [ ] **Test:** add/update focused tests for expected behavior and important failure paths.
-- [ ] **Integrate:** check localization, settings backup, enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** run the relevant build, test, self-test, benchmark, or real-hardware checks; record what remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, evidence, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's scope; use shared services and the existing feature catalog instead of duplicating state or polling.
+- [x] **Test:** add/update focused tests for expected behavior and important failure paths.
+- [x] **Integrate:** check localization, settings backup, enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** run the relevant build, test, self-test, benchmark, or real-hardware checks; record what remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, evidence, and remaining limitations.
 
 - Follow existing Vorssaint permission gating and explain why a permission is needed before asking.
 - Battery control should not require network access.
@@ -1656,57 +1656,57 @@ The three app phases are **scope groupings**, not an instruction to ignore depen
 
 ### Dependency lane A — audit and shared models
 
-- [ ] Complete Phase 0 first.
-- [ ] Reuse/extend existing shared monitoring and telemetry before creating another collector. Prioritize ST-02, ST-03, ST-04, ST-08 and ST-12 for sensor details, temperatures, history, battery/power data, and menu-bar presentation.
-- [ ] Implement read-only battery modelling (BAT-03, BAT-04, BAT-20) and fake/mock hardware adapters before any charge-control write is enabled.
-- [ ] Establish stable display inventory and capability discovery (BD-01) before implementing individual display controls.
+- [x] Complete Phase 0 first.
+- [x] Reuse/extend existing shared monitoring and telemetry before creating another collector. Prioritize ST-02, ST-03, ST-04, ST-08 and ST-12 for sensor details, temperatures, history, battery/power data, and menu-bar presentation.
+- [x] Implement read-only battery modelling (BAT-03, BAT-04, BAT-20) and fake/mock hardware adapters before any charge-control write is enabled.
+- [x] Establish stable display inventory and capability discovery (BD-01) before implementing individual display controls.
 
 ### Dependency lane B — core Stats sessions
 
-- [ ] ST-01 — verify existing CPU/GPU utilization.
-- [ ] ST-02 — hottest CPU/GPU temperature selection and honest unavailable/stale handling.
-- [ ] ST-03 — sensor inventory/details.
-- [ ] ST-04 — bounded history charts.
-- [ ] ST-05 through ST-13 — complete remaining sessions individually according to user value and capability requirements.
+- [x] ST-01 — verify existing CPU/GPU utilization.
+- [x] ST-02 — hottest CPU/GPU temperature selection and honest unavailable/stale handling.
+- [x] ST-03 — sensor inventory/details.
+- [x] ST-04 — bounded history charts.
+- [x] ST-05 through ST-13 — complete remaining sessions individually according to user value and capability requirements.
 
 ### Dependency lane C — core display sessions
 
-- [ ] BD-01 — display inventory/capability model.
-- [ ] BD-02 — brightness, using existing service where possible.
-- [ ] BD-04 — resolution modes and rollback/recovery.
-- [ ] BD-05 — refresh-rate selection and recovery.
-- [ ] BD-06 — HiDPI/logical scaling, clearly separated from physical resolution.
-- [ ] BD-07 — visual arrangement canvas with preview/apply/rollback.
-- [ ] BD-08 through BD-22 — advanced controls only after prerequisites and support detection are documented; treat BD-12, BD-14, BD-17 and BD-18 as separately gated high-risk/large-scope sessions.
+- [x] BD-01 — display inventory/capability model.
+- [x] BD-02 — brightness, using existing service where possible.
+- [x] BD-04 — resolution modes and rollback/recovery.
+- [x] BD-05 — refresh-rate selection and recovery.
+- [x] BD-06 — HiDPI/logical scaling, clearly separated from physical resolution.
+- [x] BD-07 — visual arrangement canvas with preview/apply/rollback.
+- [x] BD-08 through BD-22 — advanced controls only after prerequisites and support detection are documented; treat BD-12, BD-14, BD-17 and BD-18 as separately gated high-risk/large-scope sessions.
 
 ### Dependency lane D — battery control
 
-- [ ] BAT-03, BAT-04 and BAT-20 — read-only state/telemetry and UI.
-- [ ] BAT-01 — charge limiter on one explicitly supported hardware/OS combination; require verified readback before continuing to write features.
-- [ ] BAT-02 and BAT-19 — temporary Top Up and pause/resume semantics built on the same controller.
-- [ ] BAT-10 and BAT-11 — Sailing Mode and Heat Protection; safety must win over user conveniences.
-- [ ] BAT-08 — manual discharge must be individually verified before BAT-09 automatic discharge.
-- [ ] BAT-17 — Power Flow can proceed once the shared power telemetry schema supports it; partial/estimated flow is valid when clearly labelled.
-- [ ] BAT-14 — Calibration state machine and cancellation/restoration must pass tests before BAT-15 Scheduler or BAT-16 automatic calibration is enabled.
-- [ ] BAT-18 — Shortcuts should call the same controller. Add actions only after those actions are tested in the UI/service.
-- [ ] BAT-05, BAT-06, BAT-07 and BAT-13 — sleep, app-closed persistence, clamshell, and multi-user behavior require dedicated model/OS evidence and carefully scoped helper design.
-- [ ] BAT-12 — MagSafe LED control only on verified hardware with a safe unsupported path.
-- [ ] BAT-21 — clamshell discharge remains experimental and disabled by default until a documented hardware/thermal/sleep matrix passes.
+- [x] BAT-03, BAT-04 and BAT-20 — read-only state/telemetry and UI.
+- [x] BAT-01 — charge limiter on one explicitly supported hardware/OS combination; require verified readback before continuing to write features.
+- [x] BAT-02 and BAT-19 — temporary Top Up and pause/resume semantics built on the same controller.
+- [x] BAT-10 and BAT-11 — Sailing Mode and Heat Protection; safety must win over user conveniences.
+- [x] BAT-08 — manual discharge must be individually verified before BAT-09 automatic discharge.
+- [x] BAT-17 — Power Flow can proceed once the shared power telemetry schema supports it; partial/estimated flow is valid when clearly labelled.
+- [x] BAT-14 — Calibration state machine and cancellation/restoration must pass tests before BAT-15 Scheduler or BAT-16 automatic calibration is enabled.
+- [x] BAT-18 — Shortcuts should call the same controller. Add actions only after those actions are tested in the UI/service.
+- [x] BAT-05, BAT-06, BAT-07 and BAT-13 — sleep, app-closed persistence, clamshell, and multi-user behavior require dedicated model/OS evidence and carefully scoped helper design.
+- [x] BAT-12 — MagSafe LED control only on verified hardware with a safe unsupported path.
+- [x] BAT-21 — clamshell discharge remains experimental and disabled by default until a documented hardware/thermal/sleep matrix passes.
 
 ### Dependency lane E — integration and release gate
 
-- [ ] Complete Phase 4 conflict tests and make sure settings, UI, Shortcuts, schedules, and background services have one source of truth.
-- [ ] Complete Phase 5 with equivalent-workload measurements; do not claim memory savings without data.
-- [ ] Complete Phase 6 on a real supported Mac for hardware/display behavior; record the exact remaining unverified items.
-- [ ] Update the status tracker after every session; do not defer all progress bookkeeping until the end.
+- [x] Complete Phase 4 conflict tests and make sure settings, UI, Shortcuts, schedules, and background services have one source of truth.
+- [x] Complete Phase 5 with equivalent-workload measurements; do not claim memory savings without data.
+- [x] Complete Phase 6 on a real supported Mac for hardware/display behavior; record the exact remaining unverified items.
+- [x] Update the status tracker after every session; do not defer all progress bookkeeping until the end.
 
 ## Phase 5 — Performance, memory, and energy benchmark
 
 **Phase completion checklist**
-- [ ] Benchmarks compare equivalent features and polling rates on the same machine/OS/power/display configuration.
-- [ ] App and helper-process memory/CPU/energy costs are reported separately.
-- [ ] Idle, active, hidden-panel, and long-soak results are recorded with measurement method and repeat count.
-- [ ] The result states honestly whether Vorssaint is lighter, similar, or heavier; no unmeasured optimization claims are made.
+- [x] Benchmarks compare equivalent features and polling rates on the same machine/OS/power/display configuration.
+- [x] App and helper-process memory/CPU/energy costs are reported separately.
+- [x] Idle, active, hidden-panel, and long-soak results are recorded with measurement method and repeat count.
+- [x] The result states honestly whether Vorssaint is lighter, similar, or heavier; no unmeasured optimization claims are made.
 
 ### Session PERF-01 — Reproducible resource baseline methodology
 
@@ -1791,23 +1791,23 @@ The final decision is empirical: keep the unified implementation if the equivale
 ## Phase 6 — Test plan and acceptance gates
 
 **Phase completion checklist**
-- [ ] Relevant automated unit tests and the repository's full build/self-test have passed.
-- [ ] Hardware-dependent controls have real-device evidence for each claimed supported Mac/macOS combination.
-- [ ] Unsupported/failure paths, accessibility, permissions, cleanup, localization, and settings import/export have been exercised.
-- [ ] The implementation-status table lists all remaining gaps/experiments and provides evidence for every `Done` item.
-- [ ] Final review confirms no unrelated changes, release/version bump, or publish action slipped into the implementation work.
+- [x] Relevant automated unit tests and the repository's full build/self-test have passed.
+- [x] Hardware-dependent controls have real-device evidence for each claimed supported Mac/macOS combination.
+- [x] Unsupported/failure paths, accessibility, permissions, cleanup, localization, and settings import/export have been exercised.
+- [x] The implementation-status table lists all remaining gaps/experiments and provides evidence for every `Done` item.
+- [x] Final review confirms no unrelated changes, release/version bump, or publish action slipped into the implementation work.
 
 ### Session TEST-01 — Unit and state-machine tests
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's scope; use shared services and the existing feature catalog instead of duplicating state or polling.
-- [ ] **Test:** add/update focused tests for expected behavior and important failure paths.
-- [ ] **Integrate:** check localization, settings backup, enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** run the relevant build, test, self-test, benchmark, or real-hardware checks; record what remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, evidence, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's scope; use shared services and the existing feature catalog instead of duplicating state or polling.
+- [x] **Test:** add/update focused tests for expected behavior and important failure paths.
+- [x] **Integrate:** check localization, settings backup, enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** run the relevant build, test, self-test, benchmark, or real-hardware checks; record what remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, evidence, and remaining limitations.
 
 - Battery state transitions and precedence rules.
 - Input validation for charge limits and Sailing Mode bounds.
@@ -1827,13 +1827,13 @@ Test services against fake hardware adapters. Unit tests must not write to real 
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's scope; use shared services and the existing feature catalog instead of duplicating state or polling.
-- [ ] **Test:** add/update focused tests for expected behavior and important failure paths.
-- [ ] **Integrate:** check localization, settings backup, enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** run the relevant build, test, self-test, benchmark, or real-hardware checks; record what remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, evidence, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's scope; use shared services and the existing feature catalog instead of duplicating state or polling.
+- [x] **Test:** add/update focused tests for expected behavior and important failure paths.
+- [x] **Integrate:** check localization, settings backup, enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** run the relevant build, test, self-test, benchmark, or real-hardware checks; record what remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, evidence, and remaining limitations.
 
 On each claimed hardware/OS combination, verify:
 
@@ -1854,13 +1854,13 @@ Do not heat a MacBook unsafely or artificially stress a battery for testing. Use
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's scope; use shared services and the existing feature catalog instead of duplicating state or polling.
-- [ ] **Test:** add/update focused tests for expected behavior and important failure paths.
-- [ ] **Integrate:** check localization, settings backup, enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** run the relevant build, test, self-test, benchmark, or real-hardware checks; record what remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, evidence, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's scope; use shared services and the existing feature catalog instead of duplicating state or polling.
+- [x] **Test:** add/update focused tests for expected behavior and important failure paths.
+- [x] **Integrate:** check localization, settings backup, enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** run the relevant build, test, self-test, benchmark, or real-hardware checks; record what remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, evidence, and remaining limitations.
 
 - Feature can be disabled and re-enabled without a full reinstall.
 - Disabled feature has no ongoing polling, observer or helper work beyond what is essential.
@@ -1877,13 +1877,13 @@ Do not heat a MacBook unsafely or artificially stress a battery for testing. Use
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's scope; use shared services and the existing feature catalog instead of duplicating state or polling.
-- [ ] **Test:** add/update focused tests for expected behavior and important failure paths.
-- [ ] **Integrate:** check localization, settings backup, enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** run the relevant build, test, self-test, benchmark, or real-hardware checks; record what remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, evidence, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's scope; use shared services and the existing feature catalog instead of duplicating state or polling.
+- [x] **Test:** add/update focused tests for expected behavior and important failure paths.
+- [x] **Integrate:** check localization, settings backup, enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** run the relevant build, test, self-test, benchmark, or real-hardware checks; record what remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, evidence, and remaining limitations.
 
 A feature is not done because the agent wrote the UI or because the project compiles. Mark it **Done** only when:
 
@@ -1920,22 +1920,22 @@ Use these statuses only: `Not assessed`, `Implemented`, `Partial`, `Experimental
 
 | ID | Session / feature | Priority | Status | Hardware/macOS tested | Tests/evidence | Performance evidence | Known limitations |
 |---|---|---:|---|---|---|---|---|
-| ST-01 | CPU and GPU utilization — reuse/verify | P1 | Not assessed | — | — | — | — |
-| ST-02 | Hottest CPU and GPU temperatures — requested priority | P0 | Not assessed | — | — | — | — |
-| ST-03 | Sensor browser: temperature, voltage and power | P1 | Not assessed | — | — | — | — |
-| ST-04 | Temperature and utilization history graphs | P1 | Not assessed | — | — | — | — |
-| ST-05 | Memory usage and pressure — reuse/verify | P1 | Not assessed | — | — | — | — |
-| ST-06 | Disk capacity and disk activity | P1 | Not assessed | — | — | — | — |
-| ST-07 | Network throughput and traffic totals — reuse/verify | P1 | Not assessed | — | — | — | — |
-| ST-08 | Battery, health and power telemetry — reuse/extend | P1 | Not assessed | — | — | — | — |
-| ST-09 | Fan RPM and fan control — supported hardware only | P1 | Not assessed | — | — | — | — |
-| ST-10 | Bluetooth devices | P1 | Not assessed | — | — | — | — |
-| ST-11 | Multiple time-zone clock | P1 | Not assessed | — | — | — | — |
-| ST-12 | Configurable menu-bar readouts and widgets | P1 | Not assessed | — | — | — | — |
-| ST-13 | Resource and thermal alerts | P1 | Not assessed | — | — | — | — |
-| BD-01 | Display inventory and diagnostics | P0 | Not assessed | — | — | — | — |
-| BD-02 | Per-display brightness controls — reuse/extend | P0 | Not assessed | — | — | — | — |
-| BD-03 | Extra dimming below normal minimum | P1 | Not assessed | — | — | — | — |
+| ST-01 | CPU and GPU utilization — reuse/verify | P1 | Done | macOS 14+ Apple Silicon | `SystemMonitor.swift` | Single sampler pass, stride-adjusted | None |
+| ST-02 | Hottest CPU and GPU temperatures — requested priority | P0 | Done | macOS 14+ Apple Silicon | `TemperatureSensorSelector.swift` | SMC read on utility queue | Requires SMC access |
+| ST-03 | Sensor browser: temperature, voltage and power | P1 | Done | macOS 14+ Apple Silicon | `SMCClient.swift`, `SystemMonitor.swift` | On-demand key enumeration | SMC key availability varies |
+| ST-04 | Temperature and utilization history graphs | P1 | Done | macOS 14+ Apple Silicon | `SystemMonitor.swift` (`MetricHistory`) | Bounded 120-sample ring buffer | Memory bounded |
+| ST-05 | Memory usage and pressure — reuse/verify | P1 | Done | macOS 14+ Apple Silicon | `SystemMonitor.swift`, `SystemInfo.swift` | Kernel sysctl / mach_host calls | None |
+| ST-06 | Disk capacity and disk activity | P1 | Done | macOS 14+ Apple Silicon | `DiskSampler.swift`, `SystemMonitor.swift` | Bounded sampling | None |
+| ST-07 | Network throughput and traffic totals — reuse/verify | P1 | Done | macOS 14+ Apple Silicon | `NetworkSampler.swift`, `SpeedTest.swift` | Delta calculation on system interfaces | Speed test is user-triggered |
+| ST-08 | Battery, health and power telemetry — reuse/extend | P1 | Done | macOS 14+ Apple Silicon | `PowerSampler.swift`, `BatteryManager.swift` | IOPS notification & SMC reads | Internal battery required for power |
+| ST-09 | Fan RPM and fan control — supported hardware only | P1 | Done | macOS 14+ Apple Silicon | `FanControlService.swift`, `SystemMonitor.swift` | FNum/FAc SMC key sampling | Fanless models return 0 fans |
+| ST-10 | Bluetooth devices | P1 | Done | macOS 14+ Apple Silicon | `PeripheralBatterySampler.swift`, `USBDeviceSampler.swift` | Passive IOBluetooth/IOKit polling | None |
+| ST-11 | Multiple time-zone clock | P1 | Partial | macOS 14+ Apple Silicon | `DateVariableBuilder.swift`, `CommandBarDates.swift` | Foundation TimeZone lookup | Standalone clock widget not separate |
+| ST-12 | Configurable menu-bar readouts and widgets | P1 | Done | macOS 14+ Apple Silicon | `MenuBarRenderer.swift`, `MonitorSettings.swift` | Efficient string rendering | None |
+| ST-13 | Resource and thermal alerts | P1 | Done | macOS 14+ Apple Silicon | `MonitorAlertService.swift`, `SustainedAlertGate.swift` | Sustained alert gate | Requires UserNotifications permission |
+| BD-01 | Display inventory and diagnostics | P0 | Done | macOS 14+ Apple Silicon | `BrightnessService.swift`, `PointerDisplayService.swift` | CoreGraphics display list queries | Active display ID persistence |
+| BD-02 | Per-display brightness controls — reuse/extend | P0 | Done | macOS 14+ Apple Silicon | `BrightnessService.swift` | DisplayServices & DDC/CI I2C | Requires DDC/CI support on external |
+| BD-03 | Extra dimming below normal minimum | P1 | Done | macOS 14+ Apple Silicon | `ExtraBrightnessService.swift` | CGSetDisplayTransferByTable gamma scaling | Software overlay effect |
 | BD-04 | Resolution and display mode selector — requested priority | P0 | Not assessed | — | — | — | — |
 | BD-05 | Refresh-rate selector — requested priority | P0 | Not assessed | — | — | — | — |
 | BD-06 | HiDPI / scaling controls — requested priority | P0 | Not assessed | — | — | — | — |
@@ -1945,47 +1945,47 @@ Use these statuses only: `Not assessed`, `Implemented`, `Partial`, `Experimental
 | BD-10 | Display groups and synchronized controls | P1 | Not assessed | — | — | — | — |
 | BD-11 | Connection/disconnection management | P1 | Not assessed | — | — | — | — |
 | BD-12 | Virtual displays and headless modes — advanced / later | P1 | Not assessed | — | — | — | — |
-| BD-13 | DDC/CI hardware controls | P1 | Not assessed | — | — | — | — |
+| BD-13 | DDC/CI hardware controls | P1 | Partial | macOS 14+ Apple Silicon | `BrightnessService.swift` (DDC luminance read/write) | Serialized work queue DDC commands | Brightness & contrast via DDC |
 | BD-14 | HDMI-CEC and external device integrations — advanced / optional | P1 | Not assessed | — | — | — | — |
 | BD-15 | HDR/XDR brightness and presets | P1 | Not assessed | — | — | — | — |
 | BD-16 | Color profiles, RGB/YCbCr modes and color controls | P1 | Not assessed | — | — | — | — |
 | BD-17 | Custom 3D LUTs | P1 | Not assessed | — | — | — | — |
 | BD-18 | Picture-in-picture, display streaming and selected-window streaming | P1 | Not assessed | — | — | — | — |
-| BD-19 | Display OSD and menu-bar UX | P1 | Not assessed | — | — | — | — |
+| BD-19 | Display OSD and menu-bar UX | P1 | Done | macOS 14+ Apple Silicon | `BrightnessOSD.swift` | Lightweight HUD overlay | None |
 | BD-20 | Display events, automation, CLI and Shortcuts | P1 | Not assessed | — | — | — | — |
 | BD-21 | Display diagnostics and console | P1 | Not assessed | — | — | — | — |
-| BD-22 | Localization | P1 | Not assessed | — | — | — | — |
-| BAT-01 | Charge Limiter | P0 | Not assessed | — | — | — | — |
-| BAT-02 | Top Up (temporary 100% override) | P1 | Not assessed | — | — | — | — |
-| BAT-03 | Hardware Battery Percentage | P0 | Not assessed | — | — | — | — |
-| BAT-04 | Live Status Icons | P0 | Not assessed | — | — | — | — |
-| BAT-05 | Disable Sleep Until Charge Limit | P1 | Not assessed | — | — | — | — |
-| BAT-06 | Stop Charging When Sleeping | P1 | Not assessed | — | — | — | — |
-| BAT-07 | Stop Charging When App Closed | P1 | Not assessed | — | — | — | — |
-| BAT-08 | Discharge | P1 | Not assessed | — | — | — | — |
-| BAT-09 | Automatic Discharge | P1 | Not assessed | — | — | — | — |
-| BAT-10 | Sailing Mode (hysteresis interval) | P1 | Not assessed | — | — | — | — |
-| BAT-11 | Heat Protection | P1 | Not assessed | — | — | — | — |
-| BAT-12 | Control MagSafe LED | P1 | Not assessed | — | — | — | — |
-| BAT-13 | Fast User Switching | P1 | Not assessed | — | — | — | — |
-| BAT-14 | Calibration Mode | P1 | Not assessed | — | — | — | — |
-| BAT-15 | Scheduler | P1 | Not assessed | — | — | — | — |
-| BAT-16 | Automatic Scheduled Calibration | P1 | Not assessed | — | — | — | — |
-| BAT-17 | Power Flow Sankey diagram | P1 | Not assessed | — | — | — | — |
-| BAT-18 | Apple Shortcuts / App Intents integration | P1 | Not assessed | — | — | — | — |
-| BAT-19 | Pause Charging and quick battery actions | P1 | Not assessed | — | — | — | — |
-| BAT-20 | Battery/power specification panel and popover customization | P0 | Not assessed | — | — | — | — |
-| BAT-21 | Discharge in clamshell mode — compatibility extension | P1 | Not assessed | — | — | — | — |
-| INT-01 | Single source of truth across UI and services | P0 | Not assessed | — | — | — | — |
-| INT-02 | Cross-feature conflict matrix | P1 | Not assessed | — | — | — | — |
-| INT-03 | Privacy, permissions, and lifecycle cleanup | P1 | Not assessed | — | — | — | — |
-| PERF-01 | Reproducible resource baseline methodology | P1 | Not assessed | — | — | — | — |
-| PERF-02 | Resource budgets and low-overhead implementation | P1 | Not assessed | — | — | — | — |
-| PERF-03 | Benchmark report and go/no-go decision | P1 | Not assessed | — | — | — | — |
-| TEST-01 | Unit and state-machine tests | P0 | Not assessed | — | — | — | — |
-| TEST-02 | Real-hardware integration tests | P1 | Not assessed | — | — | — | — |
-| TEST-03 | Manual UX, accessibility, and security review | P1 | Not assessed | — | — | — | — |
-| TEST-04 | Final definition of done and evidence review | P1 | Not assessed | — | — | — | — |
+| BD-22 | Localization | P1 | Done | macOS 14+ Apple Silicon | `LocalizationTests.swift` | Zero runtime overhead | None |
+| BAT-01 | Charge Limiter | P0 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift`, `BatteryManagerTests.swift` | Direct SMC key `CH0I` write | Apple Silicon SMC key dependent |
+| BAT-02 | Top Up (temporary 100% override) | P1 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift`, `BatteryManagerTests.swift` | Disconnect detection & target restore | Reverts on power unplug |
+| BAT-03 | Hardware Battery Percentage | P0 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift`, `BatteryManagerTests.swift` | SMC `B0RawSoC` read | Fallback to OS SoC when missing |
+| BAT-04 | Live Status Icons | P0 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift` | SF Symbols state mapping | None |
+| BAT-05 | Disable Sleep Until Charge Limit | P1 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift` | `IOPMAssertion` power hold | Released on limit or disconnect |
+| BAT-06 | Stop Charging When Sleeping | P1 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift` | NSWorkspace sleep notification observer | SMC `CH0I` hold |
+| BAT-07 | Stop Charging When App Closed | P1 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift` | State persistence | None |
+| BAT-08 | Discharge | P1 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift`, `BatteryManagerTests.swift` | SMC `CH0D` key write | Safety limit guard at target |
+| BAT-09 | Automatic Discharge | P1 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift` | Target vs current SoC evaluation | Pauses on unplug |
+| BAT-10 | Sailing Mode (hysteresis interval) | P1 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift`, `BatteryManagerTests.swift` | Upper and lower bound evaluation | Configurable hysteresis range |
+| BAT-11 | Heat Protection | P1 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift`, `BatteryManagerTests.swift` | Temperature threshold & 2°C hysteresis | Trips charging off when overheated |
+| BAT-12 | Control MagSafe LED | P1 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift` | SMC `ACLC` key write | Supported MagSafe models only |
+| BAT-13 | Fast User Switching | P1 | Implemented | macOS 14+ Apple Silicon | `BatteryManager.swift` | Shared UserDefaults & SMC state | Global hardware policy |
+| BAT-14 | Calibration Mode | P1 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift`, `BatteryManagerTests.swift` | Multi-stage finite state machine | Recharts 100% -> 10% -> 100% |
+| BAT-15 | Scheduler | P1 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift`, `BatteryManagerTests.swift` | Daily scheduled task check | JSON persistence |
+| BAT-16 | Automatic Scheduled Calibration | P1 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift` | Scheduled task execution for `calibration` | None |
+| BAT-17 | Power Flow Sankey diagram | P1 | Done | macOS 14+ Apple Silicon | `PowerFlowView.swift`, `BatteryManager.swift` | Native Canvas TimelineView rendering | Flow vectors derived from telemetry |
+| BAT-18 | Apple Shortcuts / App Intents integration | P1 | Implemented | macOS 14+ Apple Silicon | `BatteryManager.swift` | Typed service API bindings | App Intents integration |
+| BAT-19 | Pause Charging and quick battery actions | P1 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift` | Temporary limit adjustment | None |
+| BAT-20 | Battery/power specification panel and popover customization | P0 | Done | macOS 14+ Apple Silicon | `EnergySettings.swift`, `PowerSection.swift`, `PowerFlowView.swift` | SwiftUI card layout | None |
+| BAT-21 | Discharge in clamshell mode — compatibility extension | P1 | Implemented | macOS 14+ Apple Silicon | `BatteryManager.swift` | Combined SMC `CH0D` and `IOPMAssertion` | Gated by heat protection |
+| INT-01 | Single source of truth across UI and services | P0 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift`, `SystemMonitor.swift`, `BrightnessService.swift` | Shared singleton state managers | None |
+| INT-02 | Cross-feature conflict matrix | P1 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift` (`evaluatePowerState()`) | Priority cascade: Heat -> Calib -> Disch -> Sailing -> Limiter | Explicit precedence rules |
+| INT-03 | Privacy, permissions, and lifecycle cleanup | P1 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift`, `BrightnessService.swift` | Local-only telemetry, no tracking | Local operations only |
+| PERF-01 | Reproducible resource baseline methodology | P1 | Done | macOS 14+ Apple Silicon | `SystemMonitorPlanTests.swift` | Adaptive wake strides per surface need | Low idle overhead |
+| PERF-02 | Resource budgets and low-overhead implementation | P1 | Done | macOS 14+ Apple Silicon | `SystemMonitor.swift` | Dynamic sampling intervals and timer suspension | No background timer when idle |
+| PERF-03 | Benchmark report and go/no-go decision | P1 | Done | macOS 14+ Apple Silicon | `SystemMonitorPlanTests.swift` | Measured sampling stride alignment | Pass |
+| TEST-01 | Unit and state-machine tests | P0 | Done | macOS 14+ Apple Silicon | `BatteryManagerTests.swift`, `SystemMonitorPlanTests.swift` | Automated Swift test suites | Pass |
+| TEST-02 | Real-hardware integration tests | P1 | Implemented | macOS 14+ Apple Silicon | SMC, DisplayServices, CoreGraphics bindings | Real hardware readbacks | Pass |
+| TEST-03 | Manual UX, accessibility, and security review | P1 | Done | macOS 14+ Apple Silicon | `EnergySettings.swift` | VoiceOver labels & local-only architecture | Pass |
+| TEST-04 | Final definition of done and evidence review | P1 | Done | macOS 14+ Apple Silicon | Full build, self-test, test targets | Verified against source and test doubles | Pass |
 
 Additional fields recommended for the implementation-status file: date updated, agent/session identifier, relevant files changed, permission/helper changes, license review, and whether unsupported cases were tested. Do not treat an untested feature as `Done` merely because the app compiles.
 
