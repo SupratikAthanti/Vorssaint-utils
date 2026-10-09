@@ -7,8 +7,7 @@ import SwiftUI
 /// edge/grid snapping, main display assignment, and layout preview/apply/rollback controls (BD-07).
 struct DisplayArrangementCanvas: View {
     @ObservedObject var service = DisplayArrangementService.shared
-    @State private var draggedDisplayID: CGDirectDisplayID? = nil
-    @State private var dragOffset: CGSize = .zero
+    @State private var dragInitialOrigin: CGPoint? = nil
 
     var body: some View {
         VStack(spacing: 16) {
@@ -71,8 +70,12 @@ struct DisplayArrangementCanvas: View {
                         .gesture(
                             DragGesture()
                                 .onChanged { value in
-                                    let newX = display.frame.origin.x + (value.translation.width / scale)
-                                    let newY = display.frame.origin.y + (value.translation.height / scale)
+                                    if dragInitialOrigin == nil {
+                                        dragInitialOrigin = display.frame.origin
+                                    }
+                                    let baseOrigin = dragInitialOrigin ?? display.frame.origin
+                                    let newX = baseOrigin.x + (value.translation.width / scale)
+                                    let newY = baseOrigin.y + (value.translation.height / scale)
                                     
                                     // Check snap against other displays
                                     let otherFrames = service.layout.displays.filter { $0.id != display.id }.map(\.frame)
@@ -80,6 +83,9 @@ struct DisplayArrangementCanvas: View {
                                     let snappedFrame = DisplayArrangementSupport.snap(frame: tentativeFrame, against: otherFrames)
                                     
                                     service.updateDisplayPosition(id: display.id, newOrigin: snappedFrame.origin)
+                                }
+                                .onEnded { _ in
+                                    dragInitialOrigin = nil
                                 }
                         )
                     }

@@ -19,6 +19,30 @@ enum DisplayModeSupport {
         let isUsable: Bool
         let ioFlags: UInt32
 
+        init(
+            id: Int,
+            cgMode: CGDisplayMode? = nil,
+            width: Int,
+            height: Int,
+            pixelWidth: Int? = nil,
+            pixelHeight: Int? = nil,
+            refreshRate: Double,
+            isInterlaced: Bool = false,
+            isUsable: Bool = true,
+            ioFlags: UInt32 = 0
+        ) {
+            self.id = id
+            self.cgMode = cgMode
+            self.width = width
+            self.height = height
+            self.pixelWidth = pixelWidth ?? width
+            self.pixelHeight = pixelHeight ?? height
+            self.refreshRate = refreshRate
+            self.isInterlaced = isInterlaced
+            self.isUsable = isUsable
+            self.ioFlags = ioFlags
+        }
+
         var scaleFactor: Double {
             guard width > 0 else { return 1.0 }
             return Double(pixelWidth) / Double(width)

@@ -91,10 +91,21 @@ final class DisplayProfileService: ObservableObject {
     /// Applies a display layout profile, skipping unmatched or disconnected displays with anti-loop retry limits.
     func applyProfile(_ profile: DisplayLayoutProfile) -> Bool {
         let onlineDisplays = fetchOnlineDisplays()
-        let onlineFingerprints = Set(onlineDisplays.map(\.fingerprint))
+        let onlineMap = Dictionary(uniqueKeysWithValues: onlineDisplays.map { ($0.fingerprint, $0.id) })
 
-        // Filter: skip unmatched or disconnected displays
-        let matchedDisplays = profile.displays.filter { onlineFingerprints.contains($0.fingerprint) }
+        // Filter: skip unmatched or disconnected displays, updating display IDs to current active CGDirectDisplayIDs
+        let matchedDisplays = profile.displays.compactMap { config -> DisplayConfig? in
+            guard let currentID = onlineMap[config.fingerprint] else { return nil }
+            return DisplayConfig(
+                id: currentID,
+                fingerprint: config.fingerprint,
+                name: config.name,
+                frame: config.frame,
+                isMain: config.isMain,
+                pixelWidth: config.pixelWidth,
+                pixelHeight: config.pixelHeight
+            )
+        }
         guard !matchedDisplays.isEmpty else {
             Self.log.error("Cannot apply profile '\(profile.name)': no online displays match profile fingerprint.")
             return false
