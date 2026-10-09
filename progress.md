@@ -5,7 +5,21 @@
 **Primary repository:** <https://github.com/vorssaint/vorssaint-utils>  
 **Target platform:** Existing Vorssaint target: macOS 14+ on Apple Silicon unless a feature is explicitly marked otherwise.
 
-## 0. Product goal
+## Roadmap progress dashboard
+
+Update these boxes as phases are accepted. A phase is not complete just because its sessions compile; use the session checklists, evidence, and the definition of done at the end of this document.
+
+- [ ] **Phase 0 — Repository audit and baseline**
+- [ ] **Phase 1 — Stats: system monitoring**
+- [ ] **Phase 2 — BetterDisplay: display controls**
+- [ ] **Phase 3 — AlDente-style battery and power management**
+- [ ] **Phase 4 — Cross-feature integration and conflict handling**
+- [ ] **Phase 5 — Performance, memory, and energy benchmark**
+- [ ] **Phase 6 — Final test and acceptance gates**
+
+**Workflow rule:** implement one session at a time. Before each session, check the current repository and existing behavior. After each session, tick only the checklist items with evidence; update the implementation-status table and commit or record the resulting change before starting the next session.
+
+## Product goal
 
 Evolve Vorssaint into one lightweight, native Mac utility that covers the useful functionality of:
 
@@ -48,19 +62,21 @@ For a focused test suite, use the repository's documented `./build.sh --test-sui
 
 Keep changes incremental and focused. Do not bump the app version or publish a release as part of this work. Update localizations, feature catalog metadata, settings backup coverage, permissions documentation, and tests whenever a feature requires them.
 
-### Required first deliverable from the coding agent
+### Phase 0 — Repository audit and baseline (no product behavior changes)
 
-Before implementation, produce a short audit report containing:
+Before implementation, complete this phase without changing product behavior:
 
-- Current modules/files that already satisfy each requested feature.
-- Gaps that require new code.
-- Existing APIs/data sources and polling intervals.
-- Existing permissions and helper processes that can be reused.
-- A risk table for charge-control methods, advanced display control, and any private APIs.
-- Baseline memory/CPU measurements (or exact reasons they cannot be collected in the agent's environment).
-- The proposed first small vertical slice.
+- [ ] Map every session ID in this file to existing files, types, services, UI, tests, and documented limitations.
+- [ ] Mark each item in the implementation-status table as implemented, partial, missing, experimental, blocked, or unsupported; add source/test evidence.
+- [ ] Record existing APIs/data sources, sampler frequencies, observers, subprocesses, helpers, and feature enable/disable behavior.
+- [ ] Record existing permission requirements and identify which features can reuse existing permissions/helpers.
+- [ ] Write a risk table for battery charge control, sleep/clamshell behavior, advanced display changes, undocumented APIs, and licensing boundaries.
+- [ ] Run the current documented build, self-test, and test commands; record exact results and warnings.
+- [ ] Capture the baseline workload described in the performance section, or state precisely which measurements cannot be collected and why.
+- [ ] Propose the first small vertical slice based on both dependency order and user priority.
+- [ ] Save the audit and evidence to `docs/unified-utility-implementation-status.md`.
 
-Do not start by writing a massive “everything” change. Use the phases in Section 7.
+**Phase 0 exit gate:** do not begin product changes until the audit identifies existing implementations and the first session has a clear plan. Do not start by writing an “everything” patch.
 
 ---
 
@@ -175,11 +191,82 @@ Define priority rules before coding. At minimum:
 
 ---
 
-## 3. Stats parity — monitoring features
+## General design and interaction guidelines
+
+These rules apply to every session. Follow the current Vorssaint visual language and UI primitives; do not clone another app's branding, exact artwork, or proprietary interface. Design the information architecture and interaction patterns, not just the underlying functionality.
+
+### Shared visual principles
+
+- **Native and consistent:** prefer existing SwiftUI/AppKit components, spacing, typography, color tokens, menu-bar/popover patterns, Settings navigation, and localization infrastructure. Do not add a web UI or a second runtime.
+- **Summary first, details on demand:** the menu-bar panel should show the few high-value current states and quick actions. Put long history, sensor inventories, advanced options, and explanations in dedicated detail/settings views.
+- **State must be honest:** visually distinguish active, paused/holding, pending, unsupported, unavailable, stale, estimated, and failed states. Never use color alone to communicate state; pair it with text, a symbol, and accessibility labels.
+- **Use units and context:** temperatures show °C/°F according to the existing preference; power shows W; battery percentages show `%`; display mode labels distinguish physical resolution from logical “Looks like” scaling. Show last-updated/source details when readings may be surprising.
+- **Accessible and localizable:** use VoiceOver labels/hints, keyboard-operable controls, sufficient contrast, Dynamic Type/resizable layouts where appropriate, and repository localization conventions. Avoid hard-coded strings in views.
+- **Safe interaction:** destructive or long-running actions need confirmation or clear progress/cancel controls. Never display a successful result until the service confirms the hardware/system state.
+- **Capability-aware controls:** disabled/unsupported actions explain why, with a helpful next step. Do not render a slider that implies arbitrary values if the underlying device only supports discrete steps.
+- **State consistency:** every view reads a shared service/model; closing a popover must not stop required enforcement, and disabling a feature must release its own work.
+
+### Stats-style monitoring UI
+
+- Use a compact summary at the top: CPU load, GPU load, hottest valid CPU sensor, hottest valid GPU sensor, memory pressure, and battery/power when available. Avoid pretending a chip has a single canonical “CPU temperature” if it exposes several sensors; identify the selected sensor and allow drill-down.
+- Use small sparklines for quick context and larger bounded history charts in a detail page. Charts need labelled axes/units, a time range, readable selected values, and a no-data/stale state.
+- Sensor inventory rows should include friendly name, raw/normalized identifier if useful for debugging, category, unit, source, latest value, and reading age. Keep raw identifiers out of the primary summary but available in diagnostics.
+- Alerts should be configured with threshold, persistence/duration, cooldown, and per-alert enable state to reduce noisy notifications. Never alert on a stale or unavailable value as though it were a live reading.
+
+### BetterDisplay-style display controls UI
+
+- Start with a **display selector** showing a useful name, built-in/external/virtual status, connection state, and a recognisable resolution/scale summary. Changing the selected display must not accidentally apply settings to all displays.
+- Keep separate controls for **brightness**, **software dimming**, **resolution**, **refresh rate**, **logical scaling/HiDPI**, **rotation**, **HDR/XDR**, **color profile/mode**, and **arrangement**. Each control shows current value, supported alternatives, and whether it affects hardware, the compositor, or an integration.
+- For potentially disruptive mode changes, show a preview/confirmation countdown and retain the previous known-good mode. If the display becomes unreadable or disappears, revert automatically after a short documented timeout unless the user confirms the change.
+- The **visual arrangement editor** should render each detected screen as a scaled rectangle on a canvas; label it with display name and effective logical dimensions; distinguish the primary display; support drag-to-position, edge/grid snapping, alignment guides, and a clear “Set as main display” action. The preview must not mutate system layout until the user applies it. Provide Cancel/Apply and recover from partial failures.
+- Profiles should be named and previewable, show the display identity they match, and explain unmatched/missing displays. Manual changes must not create endless profile reapplication loops.
+- Use concise per-display controls in the menu bar and put deep diagnostics (EDID, DDC support, available modes, color/HDR capability) in an advanced page.
+
+### AlDente-style battery UI
+
+- The battery popover should make the distinction between **current charge**, **preferred charge limit**, and **effective temporary target** explicit. If Top Up, Pause, Calibration, Heat Protection, or a schedule changes behavior, show which policy currently wins and why.
+- Show macOS-reported percentage as the primary value and hardware/controller percentage as a separate, labelled reading only when valid; explain that readings may differ due to rounding/filtering. Do not silently replace the value macOS or the system reports.
+- Use a charge-limit slider paired with a numeric field and allowed range/step. The Save/Apply action must report the actual confirmed effective limit. Offer a clear quick state indicator such as **Charging**, **Holding at limit**, **Paused**, **Discharging**, **Heat protection**, **Calibrating**, or **Unavailable**.
+- Give Heat Protection its own status row/card showing current battery temperature, configured threshold, cooldown timer, and the reason charging is paused. If temperature telemetry is stale/unavailable, show “Protection status unknown” and follow the documented fail-safe policy.
+- Calibration should be presented as a staged operation with current stage, target, progress, cancellation, and restoration of the user's prior limit. Explain that routine calibration is not a general guarantee of improved battery health and avoid recommending excessive full cycles.
+- Scheduler UI should show each task as a human-readable rule (action, time, days/frequency, enabled state, next run), with explicit handling for sleep/missed tasks, timezone/DST changes, conflicts, and execution history.
+- Do not make the battery panel busy by default. Advanced sensors, cycle count, capacity, wattage, thermal fields, action history, and status diagnostics should be selectable in an expanded/detail view.
+
+### Power Flow visualization design — mandatory for BAT-17
+
+Build a **native, lightweight Sankey-style flow view**, not a generic line chart. It should explain where available power telemetry says energy is coming from and going: adapter/charger, system load, and battery charging/discharging. Use `Canvas` or the project's existing lightweight drawing primitive rather than a heavyweight charting dependency unless an existing dependency already solves the problem efficiently.
+
+- **Layout:** use a left-to-right flow. Typical node placement is `Power Adapter` on the left, `Mac/System Load` in the centre-right, and `Battery` on the right or lower-right. If a device provides a clearer topology, select the topology from available measurements; do not force a node that has no data. In the compact popover, render only the main nodes and current wattages. The expanded panel may include descriptions, quality labels, and a short rolling trend.
+- **Nodes:** each node contains a short label, current value and unit (for example `Adapter 65 W`, `System 15 W`, `Battery +50 W`). Battery direction must be explicit: positive/arrow toward battery means charging; negative/arrow away means discharging, using one documented convention throughout. Verify how every hardware field defines its sign before mapping it.
+- **Ribbons:** ribbon width is proportional to wattage within the current view, with a small visual minimum only to keep tiny flows perceivable. If a minimum width distorts relative scale, annotate the actual number rather than implying equal power. Use arrowheads or an equivalent accessible direction cue. Keep geometry stable between updates; do not let ribbons jump position on every sample.
+- **Truthfulness/provenance:** attach `measured`, `derived`, `estimated`, `stale`, or `unavailable` quality to each value/edge. Prefer measurements actually supplied by the device. It is acceptable to show a partial flow when only partial measurements exist. Do not invent charger input power, system draw or battery power to make the diagram add up. Never imply a conservation equation has been verified if the source telemetry does not support it. Clearly label estimates and show a legend/tool tip describing the source and sample age.
+- **Unavailable data:** if only battery charge/discharge power is available, show that measurement and mark unknown paths as unknown; if no meaningful wattage exists, show a clear unavailable/unsupported state rather than a blank chart or fabricated `0 W`. Differentiate a true measured zero from missing data.
+- **Interaction:** hovering/focusing a node or ribbon reveals its value, unit, provenance, timestamp/age and source. Provide an accessible textual summary such as “Adapter input unavailable; system draw estimated at …; battery charging at …” for VoiceOver and screen readers. Do not rely on hover alone for details.
+- **Motion/performance:** optional subtle flow motion may run only while the panel is visible, the feature is enabled, and valid data is updating. Respect Reduce Motion; provide a static mode. Use a bounded sample cadence and reuse the shared telemetry service. Stop animation and reduce update work when hidden. Do not launch shell commands or resample hardware from each animation frame.
+- **Example is illustrative only:** a hypothetical `65 W` adapter split into `15 W` system load and `50 W` battery charging is a design example, not an equation the application may fabricate. Render these numbers only when supported by actual measurements or when explicitly labelled as demo data in a preview/test fixture.
+
+## Phase 1 — Stats: system monitoring and telemetry
+
+**Phase completion checklist**
+- [ ] Existing sensor/monitoring services have been audited and reused where appropriate.
+- [ ] Every ST session has a recorded status and evidence in the tracker.
+- [ ] CPU/GPU hottest temperatures show units, source/quality, update time, and unavailable states correctly.
+- [ ] Hidden/disabled monitoring does not leave unnecessary pollers, observers, or animations running.
+- [ ] Monitoring resource usage is measured against the Phase 0 baseline.
 
 **Principle:** extend the existing Vorssaint system monitor first. Several capabilities already appear to exist, including CPU/GPU usage, temperatures, battery health/power, energy-hungry-app visibility, fan tools, menu-bar readouts, network telemetry and alerts. Verify exact coverage and quality before marking items complete.
 
-### ST-01. CPU and GPU utilization — reuse/verify
+### Session ST-01 — CPU and GPU utilization — reuse/verify
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Show current CPU and GPU utilization in the system monitor and, optionally, compact menu-bar readouts.
 
@@ -191,7 +278,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** values update while visible; disabling the module stops feature-specific work; no second independent poller is created; tests cover unavailable samples and stale data.
 
-### ST-02. Hottest CPU and GPU temperatures — requested priority
+### Session ST-02 — Hottest CPU and GPU temperatures — requested priority
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Show the hottest available CPU-related and GPU-related temperature sensor readings, with a detailed sensor view for debugging.
 
@@ -206,7 +303,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** hottest CPU/GPU values match a calculation from the fresh sensor snapshot; unavailable categories show “Unavailable” rather than 0°C; a sensor update populates every UI surface from the same snapshot.
 
-### ST-03. Sensor browser: temperature, voltage and power
+### Session ST-03 — Sensor browser: temperature, voltage and power
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Provide a detailed, searchable inventory of supported sensors and their readings, grouped by category.
 
@@ -219,7 +326,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** values include units and updated-at status; unsupported or unreadable sensors are handled safely; category filtering is deterministic.
 
-### ST-04. Temperature and utilization history graphs
+### Session ST-04 — Temperature and utilization history graphs
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Display short rolling histories for selected CPU/GPU temperature, CPU/GPU load, memory pressure and battery telemetry.
 
@@ -231,7 +348,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** memory usage remains bounded after an all-day run; turning off history releases the buffer; values from missing intervals appear as gaps instead of false zeroes.
 
-### ST-05. Memory usage and pressure — reuse/verify
+### Session ST-05 — Memory usage and pressure — reuse/verify
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Provide memory use, memory pressure state and relevant system memory figures.
 
@@ -242,7 +369,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** consistent values across monitor and menu-bar UI; stale/unavailable readings are represented consistently.
 
-### ST-06. Disk capacity and disk activity
+### Session ST-06 — Disk capacity and disk activity
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Show available/used disk space and supported activity/throughput readings.
 
@@ -254,7 +391,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** volumes are identified clearly; ejected volumes disappear; disk capacity is not polled at the same rapid rate as CPU utilization.
 
-### ST-07. Network throughput and traffic totals — reuse/verify
+### Session ST-07 — Network throughput and traffic totals — reuse/verify
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Show upload/download rates, cumulative session traffic, local IP information and an optional speed test.
 
@@ -266,7 +413,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** rate resets safely when a network interface changes; the module does not perform network tests unless the user starts one.
 
-### ST-08. Battery, health and power telemetry — reuse/extend
+### Session ST-08 — Battery, health and power telemetry — reuse/extend
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Present macOS battery level, charging state, adapter state, cycle count, maximum/nominal capacity and health-related fields available from supported sources, plus battery temperature and power values when available.
 
@@ -278,7 +435,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** source and units are clear; unavailable values render as `--`/Unavailable; no “100% health” is fabricated when the source is missing.
 
-### ST-09. Fan RPM and fan control — supported hardware only
+### Session ST-09 — Fan RPM and fan control — supported hardware only
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Read fan speeds and, only where robustly supported, allow manual speed or a temperature-based curve.
 
@@ -291,7 +458,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** app quit, crash, helper removal and sleep/wake each return fans to a documented safe policy; write controls are hidden on unsupported hardware; stress tests confirm no stuck manual mode.
 
-### ST-10. Bluetooth devices
+### Session ST-10 — Bluetooth devices
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Show a small readout of connected Bluetooth device names/status where allowed by system APIs.
 
@@ -302,7 +479,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** no background scan when the module is disabled; permission denial produces a clear lightweight fallback.
 
-### ST-11. Multiple time-zone clock
+### Session ST-11 — Multiple time-zone clock
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Provide optional clocks for selected time zones in the menu bar/panel.
 
@@ -313,7 +500,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** tests cover daylight-saving transitions and non-whole-hour offsets.
 
-### ST-12. Configurable menu-bar readouts and widgets
+### Session ST-12 — Configurable menu-bar readouts and widgets
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Let the user choose which values appear in the menu bar and compact panel, reorder/hide widgets, and select compact/expanded presentations.
 
@@ -325,7 +522,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** reordering and hiding do not restart hardware collectors unnecessarily; disabled widgets subscribe to no unnecessary high-frequency updates.
 
-### ST-13. Resource and thermal alerts
+### Session ST-13 — Resource and thermal alerts
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Optional notifications for sustained high CPU load, high temperature, memory pressure, low disk space and low battery.
 
@@ -340,11 +547,28 @@ Define priority rules before coding. At minimum:
 
 ---
 
-## 4. BetterDisplay parity — display features
+## Phase 2 — BetterDisplay: display controls and workflows
+
+**Phase completion checklist**
+- [ ] Display inventory uses stable identifiers and distinguishes physical, virtual, built-in, and disconnected displays where detectable.
+- [ ] Core mode changes have a tested rollback/recovery path before broad release.
+- [ ] Every BD session has a recorded status and evidence in the tracker.
+- [ ] Unsupported modes and hardware controls are disabled with a clear explanation rather than silently failing.
+- [ ] Hot-plug, sleep/wake, profile/manual changes, and external-display behavior have been tested where available.
 
 **Important scope note:** implement the commonly used display controls first. BetterDisplay contains advanced functions (virtual displays, deep HiDPI behavior, certain HDR operations, EDID overrides, DDC/CEC and streaming) that may depend on undocumented/private APIs, particular hardware, OS-specific behavior or its Pro terms. “Public GitHub repository” does not by itself grant permission to copy every implementation or reproduce Pro functionality. Do not bypass license checks. Use a clean native implementation, or an explicitly optional documented integration where appropriate.
 
-### BD-01. Display inventory and diagnostics
+### Session BD-01 — Display inventory and diagnostics
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** List internal/external displays with current mode, logical and physical dimensions, refresh rate, rotation, scale/backing scale, HDR/color information when available, vendor/product/name, connection type, and stable identity where possible.
 
@@ -358,7 +582,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** unplugging/reconnecting a monitor updates the inventory; identical model displays can be distinguished when their hardware serials permit it; missing metadata does not crash the UI.
 
-### BD-02. Per-display brightness controls — reuse/extend
+### Session BD-02 — Per-display brightness controls — reuse/extend
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Set brightness independently for each display, including the built-in display and supported external monitors.
 
@@ -372,7 +606,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** each control shows whether it changed hardware brightness or software dimming; unsupported displays are not shown as controllable; reconnecting does not apply a stale setting to a different monitor.
 
-### BD-03. Extra dimming below normal minimum
+### Session BD-03 — Extra dimming below normal minimum
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Dim a display below its minimum hardware brightness through a software overlay/color transform when supported.
 
@@ -380,7 +624,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** dimming can always be reset using a documented recovery action; color transforms do not remain applied after disabling the feature.
 
-### BD-04. Resolution and display mode selector — requested priority
+### Session BD-04 — Resolution and display mode selector — requested priority
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Enumerate supported display modes and allow changing resolution from Settings/menu bar.
 
@@ -394,7 +648,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** switching to a listed valid mode changes the active mode and the readback reflects the selected mode; unsupported modes cannot be selected; hot-plug and sleep/wake do not corrupt the saved selection.
 
-### BD-05. Refresh-rate selector — requested priority
+### Session BD-05 — Refresh-rate selector — requested priority
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Switch among available refresh rates (for example 60/120 Hz) for each display, where the OS/monitor exposes those modes.
 
@@ -406,7 +670,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** the selector lists only valid current modes and verifies the selected mode after applying it.
 
-### BD-06. HiDPI / scaling controls — requested priority
+### Session BD-06 — HiDPI / scaling controls — requested priority
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Select UI scaling choices separately from physical output resolution, making it clear how sharpness, UI size, and effective workspace change.
 
@@ -419,7 +693,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** UI explains effective scaling, applies only validated modes, and offers a recovery path for unreadable/oversized modes.
 
-### BD-07. Visual multi-display arrangement — requested priority
+### Session BD-07 — Visual multi-display arrangement — requested priority
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Show a canvas with display rectangles that can be dragged into relative positions. Support identifying the active display and restoring a saved arrangement.
 
@@ -433,7 +717,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** arrangement survives app restart and display reordering; unsupported/removed displays are skipped with an explanation; failed changes preserve or restore the prior layout.
 
-### BD-08. Layout/configuration protection and profiles
+### Session BD-08 — Layout/configuration protection and profiles
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Store display setup profiles: layout, mode, refresh rate, rotation, scale and color profile when those settings can be captured/restored reliably. Auto-reapply a selected profile after an external monitor reconnects.
 
@@ -446,7 +740,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** repeated profile activation is idempotent; reconnect loops terminate; unknown/renamed displays don't receive a profile meant for another display.
 
-### BD-09. Favorite resolutions and keyboard shortcuts
+### Session BD-09 — Favorite resolutions and keyboard shortcuts
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Save favorite modes per display and define global or per-display hotkeys for brightness, mode/profile changes and rotation, where allowed.
 
@@ -454,7 +758,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** shortcuts do nothing destructive if the target display is absent; preferences backup and restore correctly.
 
-### BD-10. Display groups and synchronized controls
+### Session BD-10 — Display groups and synchronized controls
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Group selected displays and synchronize brightness, software image controls and UI scale when comparable controls are supported.
 
@@ -467,7 +781,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** individual override, group disable and hot-plug behavior are predictable; failure on one display does not block other group members.
 
-### BD-11. Connection/disconnection management
+### Session BD-11 — Connection/disconnection management
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Switch between display setups, disconnect/reconnect external displays through supported interfaces, and optionally disable the internal panel when an external display is connected on compatible Apple Silicon Macs.
 
@@ -480,7 +804,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** the user can restore the prior display after accidental disconnect; automatic rules are not run repeatedly on every unrelated display notification.
 
-### BD-12. Virtual displays and headless modes — advanced / later
+### Session BD-12 — Virtual displays and headless modes — advanced / later
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Create/associate virtual displays with configurable dimensions/aspect ratios, including a persistent desktop for remote/headless workflows where supported.
 
@@ -493,7 +827,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** virtual screen can be created, queried, destroyed and recovered after crash without leaving a broken display configuration or orphaned service.
 
-### BD-13. DDC/CI hardware controls
+### Session BD-13 — DDC/CI hardware controls
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** For compatible monitors, expose brightness, contrast, input switching, volume, color-channel gain and power controls supported by the monitor.
 
@@ -506,7 +850,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** only supported controls appear; failure to communicate returns quickly and does not block the UI; a long DDC operation cannot stall sensor updates.
 
-### BD-14. HDMI-CEC and external device integrations — advanced / optional
+### Session BD-14 — HDMI-CEC and external device integrations — advanced / optional
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** On compatible HDMI paths, control TV volume/mute/power/input; optionally support documented integrations for supported smart TVs and AV receivers.
 
@@ -519,7 +873,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** no network discovery or device commands occur when the integration is disabled; unsupported devices are not presented as controllable.
 
-### BD-15. HDR/XDR brightness and presets
+### Session BD-15 — HDR/XDR brightness and presets
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Expose the system's supported HDR/XDR brightness, SDR/HDR color modes and Apple display presets where available.
 
@@ -532,7 +896,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** no HDR-specific controls on unsupported displays; values are verified after changes; ordinary brightness still works if the extra-brightness feature is unavailable.
 
-### BD-16. Color profiles, RGB/YCbCr modes and color controls
+### Session BD-16 — Color profiles, RGB/YCbCr modes and color controls
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** List/select installed color profiles and supported display output modes; optional software color temperature, hue/saturation, geometry, sharpening and other image adjustments.
 
@@ -545,7 +919,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** every transform can be reset; mode writes are supported by the active display; normal UI remains responsive during transitions.
 
-### BD-17. Custom 3D LUTs
+### Session BD-17 — Custom 3D LUTs
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Import a 3D LUT and apply it to supported display adjustment or video preview/streaming paths.
 
@@ -557,7 +941,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** malformed LUTs are rejected without crashing; disabling a LUT restores unmodified rendering.
 
-### BD-18. Picture-in-picture, display streaming and selected-window streaming
+### Session BD-18 — Picture-in-picture, display streaming and selected-window streaming
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Show a display, a virtual display, a selected window or a group of windows in a movable picture-in-picture window; optionally stream/crop/rotate/flip it, target a frame rate, or create teleprompter/portrait workflows.
 
@@ -571,7 +965,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** permission denial is safe; streams stop on close/disable; CPU/GPU/memory usage is measured at each configured frame rate; no images are saved or uploaded unless the user requests it.
 
-### BD-19. Display OSD and menu-bar UX
+### Session BD-19 — Display OSD and menu-bar UX
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Optional on-screen feedback for brightness/volume changes, menu-bar sliders, quick settings, and an optional sidebar-style control panel.
 
@@ -583,7 +987,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** OSD can be disabled; it does not capture input or remain above full-screen applications unexpectedly; menu controls remain keyboard-accessible.
 
-### BD-20. Display events, automation, CLI and Shortcuts
+### Session BD-20 — Display events, automation, CLI and Shortcuts
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Run user-configured actions when a display connects/disconnects or the Mac sleeps/wakes; expose profile/mode/brightness actions to Shortcuts and optionally a local CLI/API.
 
@@ -596,7 +1010,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** all actions are idempotent or have explicit duplicate-run protection; no automation runs while disabled; failures are visible in local logs.
 
-### BD-21. Display diagnostics and console
+### Session BD-21 — Display diagnostics and console
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** A copyable diagnostics panel for mode list, EDID/DPCD/DSC information, connection/bandwidth/compression/tiling where available, support flags, and recent action logs.
 
@@ -608,7 +1032,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** diagnostics never crash if a field is absent; all reported capabilities have a known source; exported reports do not contain credentials.
 
-### BD-22. Localization
+### Session BD-22 — Localization
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Ensure all newly added display settings, errors, diagnostics and accessibility labels follow Vorssaint's language support.
 
@@ -621,11 +1055,29 @@ Define priority rules before coding. At minimum:
 
 ---
 
-## 5. AlDente-style battery care — complete requested feature set
+## Phase 3 — AlDente-style battery and power management
+
+**Phase completion checklist**
+- [ ] Read-only battery telemetry and the typed battery state machine are tested before enabling hardware writes.
+- [ ] BAT-01 charge limiting is verified on an explicit Mac/macOS configuration before other write actions are declared supported.
+- [ ] Each BAT session has a recorded status and evidence in the tracker; unsupported combinations remain clearly labelled.
+- [ ] Heat Protection remains active during Top Up, Discharge, Sailing Mode, scheduling, and Calibration.
+- [ ] Power Flow labels every value as measured, derived, estimated, stale, or unavailable and never invents a physically balanced flow.
+- [ ] Sleep, unplug, app quit, helper loss, user switch, cancellation, and sensor-failure paths restore a safe documented state.
 
 **Safety rule for every item in this section:** the user-interface target is not equivalent to hardware state. Every state-changing operation must go through the battery controller, use a supported capability adapter, be verified from readback/telemetry, and expose an error when verification fails.
 
-### BAT-01. Charge Limiter
+### Session BAT-01 — Charge Limiter
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Select a charge target (integer percentage, normally 20–100%) using a slider or editable field. If below the target, charge to the target and hold; if above it, stop charging but do not actively discharge unless a discharge mode is explicitly enabled.
 
@@ -638,7 +1090,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** setting a value updates the UI and desired state; supported hardware readback confirms enforcement; restart restores desired preferences and reconciles the current device state.
 
-### BAT-02. Top Up (temporary 100% override)
+### Session BAT-02 — Top Up (temporary 100% override)
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Temporarily raise the charge target to 100% for a one-off need, then return to the user's prior target when the session ends, especially on charger disconnect.
 
@@ -651,7 +1113,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** prior target is restored exactly once; repeated disconnect events are idempotent; Top Up cannot overwrite the user's saved baseline.
 
-### BAT-03. Hardware Battery Percentage
+### Session BAT-03 — Hardware Battery Percentage
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Show macOS's reported battery percentage and, when a verified hardware/battery-management-system value is available, a separate hardware percentage.
 
@@ -663,7 +1135,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** unavailable hardware percentage never blocks charge limiting; labels and source are explicit; no value is fabricated by simply deriving a decimal from macOS's rounded integer.
 
-### BAT-04. Live Status Icons
+### Session BAT-04 — Live Status Icons
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Show menu-bar state for plugged-in-and-charging, plugged-in-and-holding, plugged-in-and-discharging, and unplugged/on-battery.
 
@@ -675,7 +1157,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** unplugging and plugging in updates the icon; each icon has an accurate accessibility label; UI state cannot contradict the service's verified state.
 
-### BAT-05. Disable Sleep Until Charge Limit
+### Session BAT-05 — Disable Sleep Until Charge Limit
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** While plugged in and charging toward the target, optionally delay system sleep until the target is reached; re-enable sleep when the target is reached or the adapter is unplugged.
 
@@ -689,7 +1181,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** tests verify every exit path releases the sleep prevention; the UI describes the exact supported scenario; no indefinite keep-awake assertion survives a failure.
 
-### BAT-06. Stop Charging When Sleeping
+### Session BAT-06 — Stop Charging When Sleeping
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Before system sleep, capture the current macOS battery percentage and pause charging so the machine does not continue charging beyond that point while asleep, where the hardware behavior allows it.
 
@@ -702,7 +1204,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** supported hardware remains paused across a sleep/wake test; unsupported cases are documented; wake reliably restores the normal charge policy without oscillation.
 
-### BAT-07. Stop Charging When App Closed
+### Session BAT-07 — Stop Charging When App Closed
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Keep the charge-control state active after the main UI app quits on supported Apple Silicon hardware.
 
@@ -715,7 +1227,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** when supported and enabled, quitting the UI does not reset the active hold; when the helper is disabled/uninstalled the behavior is clearly reported; app quit never leaves an undocumented state.
 
-### BAT-08. Discharge
+### Session BAT-08 — Discharge
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** While plugged in, optionally use battery power until the configured target is reached, then return to normal adapter-powered holding/charging.
 
@@ -729,7 +1251,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** discharge starts only on eligible hardware and valid targets; ends at the target or a safety stop; adapter reconnection and app crash recover safely; status comes from actual battery/power telemetry.
 
-### BAT-09. Automatic Discharge
+### Session BAT-09 — Automatic Discharge
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** When the target is below current charge while plugged in, automatically start the verified Discharge operation until the target is reached.
 
@@ -742,7 +1274,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** changing the target below current charge results in at most one active discharge operation; raising the target cancels a running discharge safely; disable/restart reconciles the state without duplicate operation.
 
-### BAT-10. Sailing Mode (hysteresis interval)
+### Session BAT-10 — Sailing Mode (hysteresis interval)
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Avoid frequent charge-state changes by charging to an upper threshold, then pausing until the battery falls to a lower threshold before recharging.
 
@@ -754,7 +1296,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** no rapid on/off oscillation around one percentage point; no active battery discharge is initiated by Sailing Mode alone; saved values validate and restore.
 
-### BAT-11. Heat Protection
+### Session BAT-11 — Heat Protection
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Pause charging when battery temperature exceeds a configurable threshold; resume according to a hysteresis/cool-down policy.
 
@@ -768,7 +1320,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** tests cover threshold crossing, missing readings, stale data, exact hysteresis timing, Top Up and schedule conflicts; the charging state returns only after the recovery rule is satisfied.
 
-### BAT-12. Control MagSafe LED
+### Session BAT-12 — Control MagSafe LED
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Where hardware supports it, use the MagSafe LED to indicate charging/holding/discharging state (green/orange/blinking/off).
 
@@ -781,7 +1343,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** no LED-control command runs on unsupported hardware; all modes are tested on each listed model; failures do not affect charging control.
 
-### BAT-13. Fast User Switching
+### Session BAT-13 — Fast User Switching
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Keep one consistent charge policy when switching between macOS accounts.
 
@@ -793,7 +1365,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** tests cover same limits, conflicting limits, one user with Vorssaint closed, missing permissions, user logout and helper disabled.
 
-### BAT-14. Calibration Mode
+### Session BAT-14 — Calibration Mode
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** A guided optional battery-percentage calibration cycle with configurable stages similar to charge to 100%, discharge to 10%, charge to 100%, hold, then restore the preferred limit.
 
@@ -808,7 +1390,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** each transition has tests; app quit/restart resumes or safely cancels; safety interruption preserves the previous preference and records a reason; completion is not declared until telemetry confirms the final state.
 
-### BAT-15. Scheduler
+### Session BAT-15 — Scheduler
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Schedule battery actions with one-time/daily/weekday/weekly/biweekly/monthly repeat options, active/inactive state, execution history and catch-up for missed tasks.
 
@@ -823,7 +1415,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** tests cover DST gaps/folds, timezone change, sleep/wake, app/helper restart, duplicate events, invalid actions, and catch-up settings.
 
-### BAT-16. Automatic Scheduled Calibration
+### Session BAT-16 — Automatic Scheduled Calibration
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** A convenience template in the scheduler that runs Calibration Mode on a selected recurring schedule.
 
@@ -835,20 +1437,57 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** exactly one calibration instance can run; overlapping schedules are rejected or queued according to explicit rules.
 
-### BAT-17. Power Flow Sankey diagram
+### Session BAT-17 — Power Flow Sankey diagram
 
-**Description:** Visualize the energy path among external adapter, battery and system power consumption.
+**Session checklist**
 
-**Build instructions:**
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
-- Reuse available power telemetry and the shared sampling service.
-- Build a model with each data point tagged as `measured`, `derived`, or `estimated`. Not every model exposes adapter input watts, system consumption watts and battery charge watts independently; do not invent exact splits.
-- If only part of the flow is available, draw the known flows and label the remainder as estimated/unknown rather than forcing a false sum.
-- Animate only when the panel is visible; cap update rate and use lightweight native drawing. Keep the menu-bar popover version compact.
+**Description:** Draw a native, lightweight Sankey-style diagram that shows the available power path between the external adapter, Mac system load, and battery charging/discharging. This is a power-flow visualization, not a generic historical line chart.
 
-**Acceptance criteria:** energy values have units/provenance; values do not go negative due to counter noise; UI stops animating and sampling more frequently when hidden.
+**Implementation steps:**
 
-### BAT-18. Apple Shortcuts / App Intents integration
+1. **Audit the telemetry first.** Identify which existing Vorssaint/macOS/hardware fields report adapter input watts, system power draw, and battery charging/discharging power. Record units, sign conventions, update rate, source, validity rules, and whether each field is measured, derived, estimated, stale, or unavailable. Do not invent a field because the UI needs it.
+2. **Create one normalized graph model.** Reuse existing telemetry models where possible. A flow edge should have stable source/target IDs, wattage, unit, timestamp/sample age, provenance/quality, and direction convention. Keep graph layout/drawing separate from telemetry acquisition. The view must consume the shared telemetry service rather than creating its own sampler.
+3. **Render the primary topology left to right.** Put an Adapter/Power Source node on the left when that measurement exists, a System Load node in the centre/right when available, and a Battery node to the right or lower-right. Choose a partial topology if some nodes or edges cannot be measured; never force a complete adapter → system + battery diagram when the device does not expose the necessary values.
+4. **Draw proportional ribbons.** Scale ribbon thickness against wattage in the currently visible graph, with a modest visual minimum for tiny nonzero flows only. If the minimum distorts the visual ratio, show the exact value and do not imply that similar-width ribbons represent equal power. Provide an arrowhead or equivalent visible direction cue. Do not allow node placement to jump around on every update.
+5. **Use explicit, consistent battery direction.** Document and test the source field's actual sign semantics. For this view, define flow into the battery as `Charging +X W` with an arrow toward the battery and flow from battery to system as `Discharging X W` with an arrow away from the battery. Convert raw values only after confirming source semantics; handle noise around zero with a documented deadband and do not display negative ribbon thickness.
+6. **Put values on nodes and edges.** Show short labels such as `Adapter · 65 W`, `System · 15 W`, and `Battery · +50 W` only when those values come from valid data. Use `W` consistently. Include small quality labels or symbols for measured/estimated values; a tooltip or focused detail must show source, timestamp/age, provenance, and the meaning of the edge.
+7. **Support compact and expanded layouts.** The menu-bar popover shows only the essential nodes/flows and current values. The expanded Power panel can add the legend, source/quality details, a short bounded rolling trend if the shared telemetry history already exists, and the explanation for missing/estimated paths. Do not turn the compact popover into a crowded dashboard.
+8. **Design a clear missing-data state.** If adapter input power is unavailable but battery power is valid, show the valid battery reading and represent the other edge as `Unknown`/`Unavailable` or omit it with an explanation. Do not substitute `0 W` for a missing value. Do not make values sum to a total by adjusting/inventing numbers. If the graph cannot show any meaningful flow, render an intentional empty state that explains which telemetry is not exposed by this Mac.
+9. **Make it accessible.** Provide a concise VoiceOver/text summary of every visible flow, with values, units, direction, and quality labels. Keyboard focus must be able to reach node/ribbon details; hover cannot be the only way to read provenance. Do not rely on colour alone to distinguish directions or source quality.
+10. **Keep rendering inexpensive.** Use existing native drawing infrastructure or SwiftUI `Canvas` if appropriate; do not add a heavyweight chart dependency solely for this diagram. Animation is optional and subtle, only while the panel is visible and the feature enabled. Respect Reduce Motion and provide a static view. Never poll hardware on animation frames; update from a bounded shared sample cadence. Stop animation and reduce update work when hidden.
+
+**Design example (not a target output):** a hypothetical 65 W adapter split into 15 W system draw and 50 W battery charging illustrates how the graph could look. The live app may show those values only if the hardware actually exposes them or if they are explicitly labelled as demo fixture data in a preview/test; never fabricate this split just because it totals 65 W.
+
+**Acceptance criteria:**
+
+- [ ] Every visible value has a unit, quality/provenance, and a valid sample timestamp/age.
+- [ ] Tests cover charging, discharging, zero/deadband, negative/raw sign conversion, missing adapter data, missing battery data, stale data, and values that do not add up.
+- [ ] The renderer allows partial flows and does not fabricate a balanced energy equation.
+- [ ] Ribbon direction, labels, and battery sign convention remain consistent across charging and discharging.
+- [ ] The compact popover and expanded panel both have intentional loading, stale, and unavailable states.
+- [ ] VoiceOver/text summary communicates the same facts as the drawing; controls/details do not require hover alone.
+- [ ] Animation respects Reduce Motion, is disabled when hidden, and does not create an independent sampler or unbounded memory history.
+- [ ] Validate actual available telemetry on the supported Mac model; document missing fields instead of claiming full measured power flow.
+
+### Session BAT-18 — Apple Shortcuts / App Intents integration
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Expose battery actions and queries to macOS Shortcuts and, where appropriate, Siri/App Intents.
 
@@ -863,7 +1502,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** actions show up in Shortcuts; tests cover invalid percentages, unsupported hardware, helper denial, missing telemetry and attempts to start a duplicate calibration.
 
-### BAT-19. Pause Charging and quick battery actions
+### Session BAT-19 — Pause Charging and quick battery actions
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Set the effective limit to the current macOS percentage to pause charging without changing the saved preferred limit, then expose a quick control to resume the normal policy.
 
@@ -875,7 +1524,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** a temporary pause does not lose the saved preferred limit; Resume restores the user's policy exactly once.
 
-### BAT-20. Battery/power specification panel and popover customization
+### Session BAT-20 — Battery/power specification panel and popover customization
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Present battery telemetry (capacity, cycle count, temperature, adapter/power, percentages and supported health fields) in a customizable battery panel and let users select compact menu-bar data/icons.
 
@@ -887,7 +1546,17 @@ Define priority rules before coding. At minimum:
 
 **Acceptance criteria:** customization restores after backup/import; unavailable fields are hidden or labelled appropriately; the panel does not add its own sensor polling.
 
-### BAT-21. Discharge in clamshell mode — compatibility extension
+### Session BAT-21 — Discharge in clamshell mode — compatibility extension
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Where verified, allow discharge while connected to an external display with the lid closed.
 
@@ -901,9 +1570,25 @@ Define priority rules before coding. At minimum:
 
 ---
 
-## 6. Integration and conflict requirements
+## Phase 4 — Cross-feature integration and conflict handling
 
-### 6.1 Single source of truth
+**Phase completion checklist**
+- [ ] Menu bar, popovers, Settings, services, history, Shortcuts, and scheduler use the same source of truth.
+- [ ] The explicit conflict matrix has unit tests and visible UI behavior for each applicable conflict.
+- [ ] Permissions are minimized and optional; no new analytics/network dependency is introduced for local monitoring/control.
+- [ ] Feature toggling, settings backup/import, localization, app quit/relaunch, and helper cleanup are verified.
+
+### Session INT-01 — Single source of truth across UI and services
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's scope; use shared services and the existing feature catalog instead of duplicating state or polling.
+- [ ] **Test:** add/update focused tests for expected behavior and important failure paths.
+- [ ] **Integrate:** check localization, settings backup, enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** run the relevant build, test, self-test, benchmark, or real-hardware checks; record what remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, evidence, and remaining limitations.
 
 All interfaces must reflect the same service state:
 
@@ -916,7 +1601,17 @@ All interfaces must reflect the same service state:
 
 No feature may maintain a separate hidden “truth” about charge status, display configuration, sensor readings or whether its helper is active.
 
-### 6.2 Conflict matrix
+### Session INT-02 — Cross-feature conflict matrix
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's scope; use shared services and the existing feature catalog instead of duplicating state or polling.
+- [ ] **Test:** add/update focused tests for expected behavior and important failure paths.
+- [ ] **Integrate:** check localization, settings backup, enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** run the relevant build, test, self-test, benchmark, or real-hardware checks; record what remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, evidence, and remaining limitations.
 
 The agent must implement and unit-test an explicit matrix for these overlaps:
 
@@ -934,7 +1629,17 @@ The agent must implement and unit-test an explicit matrix for these overlaps:
 | Display hot-plug + scheduled profile | Coalesce duplicate events and apply at most once per stable configuration. |
 | Sensor stale/unavailable + alert or Heat Protection | Mark telemetry unavailable; follow a documented fail-safe policy and never treat missing values as safe values. |
 
-### 6.3 Privacy and permissions
+### Session INT-03 — Privacy, permissions, and lifecycle cleanup
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's scope; use shared services and the existing feature catalog instead of duplicating state or polling.
+- [ ] **Test:** add/update focused tests for expected behavior and important failure paths.
+- [ ] **Integrate:** check localization, settings backup, enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** run the relevant build, test, self-test, benchmark, or real-hardware checks; record what remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, evidence, and remaining limitations.
 
 - Follow existing Vorssaint permission gating and explain why a permission is needed before asking.
 - Battery control should not require network access.
@@ -945,63 +1650,75 @@ The agent must implement and unit-test an explicit matrix for these overlaps:
 
 ---
 
-## 7. Delivery phases and ordering
+## Session ordering and dependency gates
 
-Do not ask the maintainer to accept a huge all-at-once patch. Land and test one vertical slice at a time.
+The three app phases are **scope groupings**, not an instruction to ignore dependencies. Complete sessions independently and follow the order below where one feature depends on another. A session can be marked `Done` only when its own acceptance criteria and session checklist are satisfied.
 
-### Phase 0 — Audit and benchmark (no product behavior changes)
+### Dependency lane A — audit and shared models
 
-1. Map existing code to the feature list.
-2. Record current optimized/developer build results, self-test results and existing test suites.
-3. Capture a repeatable resource baseline: Vorssaint idle; Vorssaint with current monitor visible; Stats running by itself; BetterDisplay running by itself; AlDente running by itself; all three separately; all three together; and Vorssaint with equivalent features enabled.
-4. Record macOS version, Mac model/chip/RAM, attached displays, power mode and exact feature/polling settings.
-5. Create `docs/unified-utility-implementation-status.md` with a table of implemented/partial/missing/unsupported capabilities and evidence.
+- [ ] Complete Phase 0 first.
+- [ ] Reuse/extend existing shared monitoring and telemetry before creating another collector. Prioritize ST-02, ST-03, ST-04, ST-08 and ST-12 for sensor details, temperatures, history, battery/power data, and menu-bar presentation.
+- [ ] Implement read-only battery modelling (BAT-03, BAT-04, BAT-20) and fake/mock hardware adapters before any charge-control write is enabled.
+- [ ] Establish stable display inventory and capability discovery (BD-01) before implementing individual display controls.
 
-### Phase 1 — Shared monitoring parity
+### Dependency lane B — core Stats sessions
 
-Implement/verify ST-02, ST-03, ST-04 and ST-12 first: hottest CPU/GPU sensor, details, compact menu-bar display and bounded graph. Reuse the existing monitor/sensor service. Extend battery/power telemetry using ST-08 only after confirming existing coverage. Add relevant tests and translations.
+- [ ] ST-01 — verify existing CPU/GPU utilization.
+- [ ] ST-02 — hottest CPU/GPU temperature selection and honest unavailable/stale handling.
+- [ ] ST-03 — sensor inventory/details.
+- [ ] ST-04 — bounded history charts.
+- [ ] ST-05 through ST-13 — complete remaining sessions individually according to user value and capability requirements.
 
-### Phase 2 — Basic display controls
+### Dependency lane C — core display sessions
 
-Implement/verify BD-01, BD-02, BD-04, BD-05, BD-06 and BD-07. Prioritize: detect displays correctly, list supported modes, change resolution/refresh where supported, present current scaling information and manage a basic arrangement. Provide a recovery path for mode/layout failures before releasing controls.
+- [ ] BD-01 — display inventory/capability model.
+- [ ] BD-02 — brightness, using existing service where possible.
+- [ ] BD-04 — resolution modes and rollback/recovery.
+- [ ] BD-05 — refresh-rate selection and recovery.
+- [ ] BD-06 — HiDPI/logical scaling, clearly separated from physical resolution.
+- [ ] BD-07 — visual arrangement canvas with preview/apply/rollback.
+- [ ] BD-08 through BD-22 — advanced controls only after prerequisites and support detection are documented; treat BD-12, BD-14, BD-17 and BD-18 as separately gated high-risk/large-scope sessions.
 
-### Phase 3 — Battery read-only model and safety state machine
+### Dependency lane D — battery control
 
-Implement ST-08/BAT-03/BAT-04/BAT-20 read-only. Build the typed battery state machine and mock adapter. Validate all transitions in unit tests before enabling any hardware write.
+- [ ] BAT-03, BAT-04 and BAT-20 — read-only state/telemetry and UI.
+- [ ] BAT-01 — charge limiter on one explicitly supported hardware/OS combination; require verified readback before continuing to write features.
+- [ ] BAT-02 and BAT-19 — temporary Top Up and pause/resume semantics built on the same controller.
+- [ ] BAT-10 and BAT-11 — Sailing Mode and Heat Protection; safety must win over user conveniences.
+- [ ] BAT-08 — manual discharge must be individually verified before BAT-09 automatic discharge.
+- [ ] BAT-17 — Power Flow can proceed once the shared power telemetry schema supports it; partial/estimated flow is valid when clearly labelled.
+- [ ] BAT-14 — Calibration state machine and cancellation/restoration must pass tests before BAT-15 Scheduler or BAT-16 automatic calibration is enabled.
+- [ ] BAT-18 — Shortcuts should call the same controller. Add actions only after those actions are tested in the UI/service.
+- [ ] BAT-05, BAT-06, BAT-07 and BAT-13 — sleep, app-closed persistence, clamshell, and multi-user behavior require dedicated model/OS evidence and carefully scoped helper design.
+- [ ] BAT-12 — MagSafe LED control only on verified hardware with a safe unsupported path.
+- [ ] BAT-21 — clamshell discharge remains experimental and disabled by default until a documented hardware/thermal/sleep matrix passes.
 
-### Phase 4 — First hardware write: Charge Limiter
+### Dependency lane E — integration and release gate
 
-Implement BAT-01 for one explicitly supported hardware configuration, then test readback, sleep/wake, restart, OS updates, error recovery and battery-controller teardown. Keep unsupported devices read-only. Do not implement all other battery actions until this passes.
+- [ ] Complete Phase 4 conflict tests and make sure settings, UI, Shortcuts, schedules, and background services have one source of truth.
+- [ ] Complete Phase 5 with equivalent-workload measurements; do not claim memory savings without data.
+- [ ] Complete Phase 6 on a real supported Mac for hardware/display behavior; record the exact remaining unverified items.
+- [ ] Update the status tracker after every session; do not defer all progress bookkeeping until the end.
 
-### Phase 5 — Low-risk battery actions
+## Phase 5 — Performance, memory, and energy benchmark
 
-Implement BAT-02 Top Up; BAT-10 Sailing Mode (without active discharge); BAT-11 Heat Protection; BAT-19 Pause Charging; BAT-18 Shortcuts read-only/query and set-limit actions. Add status icons and conflict tests.
+**Phase completion checklist**
+- [ ] Benchmarks compare equivalent features and polling rates on the same machine/OS/power/display configuration.
+- [ ] App and helper-process memory/CPU/energy costs are reported separately.
+- [ ] Idle, active, hidden-panel, and long-soak results are recorded with measurement method and repeat count.
+- [ ] The result states honestly whether Vorssaint is lighter, similar, or heavier; no unmeasured optimization claims are made.
 
-### Phase 6 — Persistence and sleep behavior
+### Session PERF-01 — Reproducible resource baseline methodology
 
-Research and implement BAT-06 Stop Charging when Sleeping, BAT-07 Stop Charging When App Closed, BAT-13 Fast User Switching and BAT-05 Disable Sleep Until Limit only if the required model/OS behavior is verified. Add helper only if necessary. Do not bundle these into a generic root script.
+**Session checklist**
 
-### Phase 7 — Discharge and calibration
-
-Implement BAT-08 Discharge in a narrow supported hardware matrix, then BAT-09 Automatic Discharge, BAT-14 Calibration Mode, BAT-15 Scheduler, BAT-16 Scheduled Calibration and BAT-21 clamshell discharge. Each stage must have dedicated physical-device test evidence before proceeding to the next.
-
-### Phase 8 — Advanced display controls
-
-Implement BD-08 profiles; BD-09 shortcuts; BD-10 groups; BD-11 connection management; BD-13 DDC controls; BD-15/BD-16 supported HDR/color controls; BD-19 OSD; BD-20 automation; BD-21 diagnostics. Keep unsupported/private mechanisms isolated and optional.
-
-### Phase 9 — High-risk/large-scope display work
-
-Only after core app performance remains acceptable, evaluate BD-12 virtual displays, BD-17 3D LUTs, BD-18 selected-window/display streaming, and BD-14 HDMI-CEC/smart-device integrations. Build prototypes behind independent feature flags and evaluate CPU/GPU/RAM cost before broad integration.
-
-### Phase 10 — Final parity and resource decision
-
-Repeat the baseline workload with equivalent visible features and comparable polling intervals. Document all missing/experimental features, licensing boundaries, hardware support and benchmark data. Do not claim Vorssaint is lighter or fully replaces the three products unless measured evidence supports that claim.
-
----
-
-## 8. Performance and memory budget
-
-### 8.1 Baseline methodology
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's scope; use shared services and the existing feature catalog instead of duplicating state or polling.
+- [ ] **Test:** add/update focused tests for expected behavior and important failure paths.
+- [ ] **Integrate:** check localization, settings backup, enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** run the relevant build, test, self-test, benchmark, or real-hardware checks; record what remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, evidence, and remaining limitations.
 
 Compare the following workloads on the same Mac, macOS release, power source and attached-display setup:
 
@@ -1016,7 +1733,17 @@ For each run, allow startup/warm-up, record at least several minutes of idle beh
 
 Suggested tools: Activity Monitor, Instruments (Allocations/Time Profiler/Energy Log where available), and built-in process/system measurements. Record exact commands/tools and repeatability in the report. Do not use a benchmark measured on a simulator as evidence for temperature, battery, display or helper behavior.
 
-### 8.2 Engineering goals
+### Session PERF-02 — Resource budgets and low-overhead implementation
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's scope; use shared services and the existing feature catalog instead of duplicating state or polling.
+- [ ] **Test:** add/update focused tests for expected behavior and important failure paths.
+- [ ] **Integrate:** check localization, settings backup, enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** run the relevant build, test, self-test, benchmark, or real-hardware checks; record what remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, evidence, and remaining limitations.
 
 These are initial regression targets, to be measured and adjusted from the actual baseline rather than treated as guarantees:
 
@@ -1030,7 +1757,17 @@ These are initial regression targets, to be measured and adjusted from the actua
 - No runaway memory growth after an overnight/all-day soak test.
 - Quiescent average CPU and energy impact should remain close to the pre-change app baseline; report measured differences instead of claiming an arbitrary win.
 
-### 8.3 Required benchmark report
+### Session PERF-03 — Benchmark report and go/no-go decision
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's scope; use shared services and the existing feature catalog instead of duplicating state or polling.
+- [ ] **Test:** add/update focused tests for expected behavior and important failure paths.
+- [ ] **Integrate:** check localization, settings backup, enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** run the relevant build, test, self-test, benchmark, or real-hardware checks; record what remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, evidence, and remaining limitations.
 
 Record at least:
 
@@ -1051,9 +1788,26 @@ The final decision is empirical: keep the unified implementation if the equivale
 
 ---
 
-## 9. Test plan and acceptance gates
+## Phase 6 — Test plan and acceptance gates
 
-### 9.1 Unit tests (required)
+**Phase completion checklist**
+- [ ] Relevant automated unit tests and the repository's full build/self-test have passed.
+- [ ] Hardware-dependent controls have real-device evidence for each claimed supported Mac/macOS combination.
+- [ ] Unsupported/failure paths, accessibility, permissions, cleanup, localization, and settings import/export have been exercised.
+- [ ] The implementation-status table lists all remaining gaps/experiments and provides evidence for every `Done` item.
+- [ ] Final review confirms no unrelated changes, release/version bump, or publish action slipped into the implementation work.
+
+### Session TEST-01 — Unit and state-machine tests
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's scope; use shared services and the existing feature catalog instead of duplicating state or polling.
+- [ ] **Test:** add/update focused tests for expected behavior and important failure paths.
+- [ ] **Integrate:** check localization, settings backup, enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** run the relevant build, test, self-test, benchmark, or real-hardware checks; record what remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, evidence, and remaining limitations.
 
 - Battery state transitions and precedence rules.
 - Input validation for charge limits and Sailing Mode bounds.
@@ -1069,7 +1823,17 @@ The final decision is empirical: keep the unified implementation if the equivale
 
 Test services against fake hardware adapters. Unit tests must not write to real SMC keys, change actual display modes, keep the machine awake or start a real calibration cycle.
 
-### 9.2 Hardware integration tests (required before declaring features supported)
+### Session TEST-02 — Real-hardware integration tests
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's scope; use shared services and the existing feature catalog instead of duplicating state or polling.
+- [ ] **Test:** add/update focused tests for expected behavior and important failure paths.
+- [ ] **Integrate:** check localization, settings backup, enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** run the relevant build, test, self-test, benchmark, or real-hardware checks; record what remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, evidence, and remaining limitations.
 
 On each claimed hardware/OS combination, verify:
 
@@ -1086,7 +1850,17 @@ On each claimed hardware/OS combination, verify:
 
 Do not heat a MacBook unsafely or artificially stress a battery for testing. Use controlled, conservative tests and stop if the device becomes unexpectedly hot or behaves abnormally.
 
-### 9.3 Manual UX/security checklist
+### Session TEST-03 — Manual UX, accessibility, and security review
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's scope; use shared services and the existing feature catalog instead of duplicating state or polling.
+- [ ] **Test:** add/update focused tests for expected behavior and important failure paths.
+- [ ] **Integrate:** check localization, settings backup, enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** run the relevant build, test, self-test, benchmark, or real-hardware checks; record what remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, evidence, and remaining limitations.
 
 - Feature can be disabled and re-enabled without a full reinstall.
 - Disabled feature has no ongoing polling, observer or helper work beyond what is essential.
@@ -1099,7 +1873,17 @@ Do not heat a MacBook unsafely or artificially stress a battery for testing. Use
 - The feature behaves correctly when its panel is hidden, app launches into background, the system wakes, a monitor reconnects, or the app is force-quit.
 - All user-visible text is localized following repository conventions.
 
-### 9.4 “Done” means all of these
+### Session TEST-04 — Final definition of done and evidence review
+
+**Session checklist**
+
+- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [ ] **Implement:** change only this session's scope; use shared services and the existing feature catalog instead of duplicating state or polling.
+- [ ] **Test:** add/update focused tests for expected behavior and important failure paths.
+- [ ] **Integrate:** check localization, settings backup, enable/disable cleanup, permissions, and diagnostics where applicable.
+- [ ] **Verify:** run the relevant build, test, self-test, benchmark, or real-hardware checks; record what remains unverified.
+- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, evidence, and remaining limitations.
 
 A feature is not done because the agent wrote the UI or because the project compiles. Mark it **Done** only when:
 
@@ -1114,7 +1898,7 @@ A feature is not done because the agent wrote the UI or because the project comp
 
 ---
 
-## 10. Licensing, dependency and upstream boundaries
+## Engineering constraints — licensing, dependencies, and upstream boundaries
 
 These projects are references, not permission to copy everything indiscriminately:
 
@@ -1128,27 +1912,86 @@ A documented BetterDisplay CLI integration can be useful as a **temporary compar
 
 ---
 
-## 11. Feature completion tracker template
+## Progress tracking and implementation status
 
-Keep this table in `docs/unified-utility-implementation-status.md` and update it in each implementation phase.
+Keep this full table in `docs/unified-utility-implementation-status.md` and update it at the end of **each** session. The checkboxes under each session are the working checklist; this table is the high-level evidence index.
 
-| ID | Feature | Priority | Status | Hardware/OS tested | Tests | Performance evidence | Known limitations |
+Use these statuses only: `Not assessed`, `Implemented`, `Partial`, `Experimental`, `Blocked`, `Unsupported`, `Done`. `Done` requires test evidence and, for hardware behavior, an explicitly stated real-device/macOS test combination. `Implemented` means code exists but does not imply validation. Use commit SHA, test run, screenshot/log (redacted), hardware/OS matrix, and known limitations instead of vague notes such as “works.”
+
+| ID | Session / feature | Priority | Status | Hardware/macOS tested | Tests/evidence | Performance evidence | Known limitations |
 |---|---|---:|---|---|---|---|---|
-| ST-02 | Hottest CPU/GPU temperatures | P0 | Not assessed | — | — | — | — |
-| BD-04 | Resolution selector | P0 | Not assessed | — | — | — | — |
-| BD-05 | Refresh-rate selector | P0 | Not assessed | — | — | — | — |
-| BD-06 | HiDPI/scaling controls | P0 | Not assessed | — | — | — | — |
-| BD-07 | Display arrangement | P0 | Not assessed | — | — | — | — |
-| BAT-01 | Charge limiter | P0 | Not assessed | — | — | — | — |
-| BAT-02 | Top Up | P1 | Not assessed | — | — | — | — |
+| ST-01 | CPU and GPU utilization — reuse/verify | P1 | Not assessed | — | — | — | — |
+| ST-02 | Hottest CPU and GPU temperatures — requested priority | P0 | Not assessed | — | — | — | — |
+| ST-03 | Sensor browser: temperature, voltage and power | P1 | Not assessed | — | — | — | — |
+| ST-04 | Temperature and utilization history graphs | P1 | Not assessed | — | — | — | — |
+| ST-05 | Memory usage and pressure — reuse/verify | P1 | Not assessed | — | — | — | — |
+| ST-06 | Disk capacity and disk activity | P1 | Not assessed | — | — | — | — |
+| ST-07 | Network throughput and traffic totals — reuse/verify | P1 | Not assessed | — | — | — | — |
+| ST-08 | Battery, health and power telemetry — reuse/extend | P1 | Not assessed | — | — | — | — |
+| ST-09 | Fan RPM and fan control — supported hardware only | P1 | Not assessed | — | — | — | — |
+| ST-10 | Bluetooth devices | P1 | Not assessed | — | — | — | — |
+| ST-11 | Multiple time-zone clock | P1 | Not assessed | — | — | — | — |
+| ST-12 | Configurable menu-bar readouts and widgets | P1 | Not assessed | — | — | — | — |
+| ST-13 | Resource and thermal alerts | P1 | Not assessed | — | — | — | — |
+| BD-01 | Display inventory and diagnostics | P0 | Not assessed | — | — | — | — |
+| BD-02 | Per-display brightness controls — reuse/extend | P0 | Not assessed | — | — | — | — |
+| BD-03 | Extra dimming below normal minimum | P1 | Not assessed | — | — | — | — |
+| BD-04 | Resolution and display mode selector — requested priority | P0 | Not assessed | — | — | — | — |
+| BD-05 | Refresh-rate selector — requested priority | P0 | Not assessed | — | — | — | — |
+| BD-06 | HiDPI / scaling controls — requested priority | P0 | Not assessed | — | — | — | — |
+| BD-07 | Visual multi-display arrangement — requested priority | P0 | Not assessed | — | — | — | — |
+| BD-08 | Layout/configuration protection and profiles | P1 | Not assessed | — | — | — | — |
+| BD-09 | Favorite resolutions and keyboard shortcuts | P1 | Not assessed | — | — | — | — |
+| BD-10 | Display groups and synchronized controls | P1 | Not assessed | — | — | — | — |
+| BD-11 | Connection/disconnection management | P1 | Not assessed | — | — | — | — |
+| BD-12 | Virtual displays and headless modes — advanced / later | P1 | Not assessed | — | — | — | — |
+| BD-13 | DDC/CI hardware controls | P1 | Not assessed | — | — | — | — |
+| BD-14 | HDMI-CEC and external device integrations — advanced / optional | P1 | Not assessed | — | — | — | — |
+| BD-15 | HDR/XDR brightness and presets | P1 | Not assessed | — | — | — | — |
+| BD-16 | Color profiles, RGB/YCbCr modes and color controls | P1 | Not assessed | — | — | — | — |
+| BD-17 | Custom 3D LUTs | P1 | Not assessed | — | — | — | — |
+| BD-18 | Picture-in-picture, display streaming and selected-window streaming | P1 | Not assessed | — | — | — | — |
+| BD-19 | Display OSD and menu-bar UX | P1 | Not assessed | — | — | — | — |
+| BD-20 | Display events, automation, CLI and Shortcuts | P1 | Not assessed | — | — | — | — |
+| BD-21 | Display diagnostics and console | P1 | Not assessed | — | — | — | — |
+| BD-22 | Localization | P1 | Not assessed | — | — | — | — |
+| BAT-01 | Charge Limiter | P0 | Not assessed | — | — | — | — |
+| BAT-02 | Top Up (temporary 100% override) | P1 | Not assessed | — | — | — | — |
+| BAT-03 | Hardware Battery Percentage | P0 | Not assessed | — | — | — | — |
+| BAT-04 | Live Status Icons | P0 | Not assessed | — | — | — | — |
+| BAT-05 | Disable Sleep Until Charge Limit | P1 | Not assessed | — | — | — | — |
+| BAT-06 | Stop Charging When Sleeping | P1 | Not assessed | — | — | — | — |
+| BAT-07 | Stop Charging When App Closed | P1 | Not assessed | — | — | — | — |
+| BAT-08 | Discharge | P1 | Not assessed | — | — | — | — |
+| BAT-09 | Automatic Discharge | P1 | Not assessed | — | — | — | — |
+| BAT-10 | Sailing Mode (hysteresis interval) | P1 | Not assessed | — | — | — | — |
 | BAT-11 | Heat Protection | P1 | Not assessed | — | — | — | — |
-| BAT-18 | Shortcuts/App Intents | P1 | Not assessed | — | — | — | — |
+| BAT-12 | Control MagSafe LED | P1 | Not assessed | — | — | — | — |
+| BAT-13 | Fast User Switching | P1 | Not assessed | — | — | — | — |
+| BAT-14 | Calibration Mode | P1 | Not assessed | — | — | — | — |
+| BAT-15 | Scheduler | P1 | Not assessed | — | — | — | — |
+| BAT-16 | Automatic Scheduled Calibration | P1 | Not assessed | — | — | — | — |
+| BAT-17 | Power Flow Sankey diagram | P1 | Not assessed | — | — | — | — |
+| BAT-18 | Apple Shortcuts / App Intents integration | P1 | Not assessed | — | — | — | — |
+| BAT-19 | Pause Charging and quick battery actions | P1 | Not assessed | — | — | — | — |
+| BAT-20 | Battery/power specification panel and popover customization | P0 | Not assessed | — | — | — | — |
+| BAT-21 | Discharge in clamshell mode — compatibility extension | P1 | Not assessed | — | — | — | — |
+| INT-01 | Single source of truth across UI and services | P0 | Not assessed | — | — | — | — |
+| INT-02 | Cross-feature conflict matrix | P1 | Not assessed | — | — | — | — |
+| INT-03 | Privacy, permissions, and lifecycle cleanup | P1 | Not assessed | — | — | — | — |
+| PERF-01 | Reproducible resource baseline methodology | P1 | Not assessed | — | — | — | — |
+| PERF-02 | Resource budgets and low-overhead implementation | P1 | Not assessed | — | — | — | — |
+| PERF-03 | Benchmark report and go/no-go decision | P1 | Not assessed | — | — | — | — |
+| TEST-01 | Unit and state-machine tests | P0 | Not assessed | — | — | — | — |
+| TEST-02 | Real-hardware integration tests | P1 | Not assessed | — | — | — | — |
+| TEST-03 | Manual UX, accessibility, and security review | P1 | Not assessed | — | — | — | — |
+| TEST-04 | Final definition of done and evidence review | P1 | Not assessed | — | — | — | — |
 
-Statuses must be one of: `Not assessed`, `Implemented`, `Partial`, `Experimental`, `Blocked`, `Unsupported`, `Done`. Include a commit reference or test evidence for `Done`.
+Additional fields recommended for the implementation-status file: date updated, agent/session identifier, relevant files changed, permission/helper changes, license review, and whether unsupported cases were tested. Do not treat an untested feature as `Done` merely because the app compiles.
 
 ---
 
-## 12. Reference links checked while preparing this specification
+## Reference links
 
 Use these as starting points, not as a substitute for inspecting the current project and current documentation before coding:
 
@@ -1166,4 +2009,4 @@ Use these as starting points, not as a substitute for inspecting the current pro
 
 ## Final instruction to the AI coding agent
 
-Treat this document as a product roadmap and specification, not as permission to implement all features in one patch. First audit the repository and report what already exists. Then implement the highest-priority small slice. Build, test and benchmark it before moving on. Prefer accurate partial support over a broad set of controls that do not work reliably. Never claim a hardware operation succeeded without reading back the actual state, and never sacrifice charging, thermal, sleep or display recovery safety to reach feature parity.
+Treat this document as a product roadmap and specification, not as permission to implement all features in one patch. First audit the repository and report what already exists. Then select one session, complete its checklist, and validate it before starting the next session. Build, test and benchmark it before moving on. Prefer accurate partial support over a broad set of controls that do not work reliably. Never claim a hardware operation succeeded without reading back the actual state, and never sacrifice charging, thermal, sleep or display recovery safety to reach feature parity.
