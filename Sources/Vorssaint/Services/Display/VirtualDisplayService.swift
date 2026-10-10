@@ -57,6 +57,8 @@ final class VirtualDisplayService: ObservableObject {
         }
     }
 
+    private var nextSimulatedIDCounter: UInt32 = 10001
+
     /// Creates a new virtual display descriptor and initializes a virtual display if supported.
     @discardableResult
     func createVirtualDisplay(name: String, width: Int, height: Int, refreshRate: Int = 60, isHiDPI: Bool = true, isPersistent: Bool = false) -> VirtualDisplayDescriptor {
@@ -64,8 +66,13 @@ final class VirtualDisplayService: ObservableObject {
         let validHeight = max(480, min(4320, height))
         let validRefresh = max(24, min(240, refreshRate))
 
-        let simulatedID = UInt32(10000 + descriptors.count + 1)
-        var descriptor = VirtualDisplayDescriptor(
+        while activeDisplayIDs.contains(nextSimulatedIDCounter) {
+            nextSimulatedIDCounter += 1
+        }
+        let simulatedID = nextSimulatedIDCounter
+        nextSimulatedIDCounter += 1
+
+        let descriptor = VirtualDisplayDescriptor(
             id: UUID(),
             name: name,
             width: validWidth,
@@ -99,13 +106,21 @@ final class VirtualDisplayService: ObservableObject {
     /// Recovers state after system sleep or crash, re-establishing persistent virtual displays.
     func recoverVirtualDisplays() {
         Self.log.log("Re-evaluating persistent virtual display sessions for recovery...")
+        var updatedActiveIDs = Set<UInt32>()
         for i in 0..<descriptors.count {
             if descriptors[i].isPersistent {
-                let newID = UInt32(10000 + i + 1)
+                while updatedActiveIDs.contains(nextSimulatedIDCounter) {
+                    nextSimulatedIDCounter += 1
+                }
+                let newID = nextSimulatedIDCounter
+                nextSimulatedIDCounter += 1
                 descriptors[i].activeDisplayID = newID
-                activeDisplayIDs.insert(newID)
+                updatedActiveIDs.insert(newID)
+            } else {
+                descriptors[i].activeDisplayID = nil
             }
         }
+        activeDisplayIDs = updatedActiveIDs
         saveDescriptors()
     }
 }

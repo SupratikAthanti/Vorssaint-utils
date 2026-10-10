@@ -90,6 +90,12 @@ final class DisplayAutomationService: ObservableObject {
                     _ = DisplayProfileService.shared.applyProfile(profile)
                 }
             }
+
+            if let targetBrightness = rule.brightnessTarget {
+                let validBrightness = max(0, min(100, targetBrightness))
+                BrightnessService.shared.setBrightness(Double(validBrightness) / 100.0)
+                Self.log.log("Applied target brightness \(validBrightness)% for rule '\(rule.name)'")
+            }
         }
     }
 
@@ -102,13 +108,19 @@ final class DisplayAutomationService: ObservableObject {
 
         switch verb.lowercased() {
         case "list-displays":
-            let count = DisplayProfileService.shared.profiles.count
-            return (true, "Profiles loaded: \(count)")
+            var count: UInt32 = 0
+            var displayIDs = [CGDirectDisplayID](repeating: 0, count: 16)
+            guard CGGetOnlineDisplayList(16, &displayIDs, &count) == .success else {
+                return (false, "Failed to query connected displays.")
+            }
+            return (true, "Online displays connected: \(count)")
         case "set-brightness":
             guard parts.count >= 2, let level = Int(parts[1]) else {
                 return (false, "Usage: set-brightness <0-100>")
             }
-            return (true, "Brightness set to \(level)% across connected displays.")
+            let validLevel = max(0, min(100, level))
+            BrightnessService.shared.setBrightness(Double(validLevel) / 100.0)
+            return (true, "Brightness set to \(validLevel)% across connected displays.")
         default:
             return (false, "Unknown CLI verb '\(verb)'")
         }

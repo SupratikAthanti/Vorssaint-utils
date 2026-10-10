@@ -52,36 +52,60 @@ final class SimulationDoubleStateMachinesTests {
         var machine = SimulationMachine(physical: .disconnected, software: .idle)
         var logs: [String] = []
 
-        // 1. Battery Power & Thermal Simulation Loop
-        logs.append(machine.stepSimulation(eventDescription: "AC Adapter plugged in (65W)"))
-        machine.physical = .connectedAC(wattage: 65)
-        machine.software = .chargingToLimit(target: 80)
+        // 1. Real BatteryManager State Machine Integration
+        let battery = BatteryManager.shared
+        battery.chargeLimit = 80
+        if battery.chargeLimit != 80 { return false }
+        logs.append(machine.stepSimulation(eventDescription: "Battery charge limit target set to \(battery.chargeLimit)%"))
 
-        logs.append(machine.stepSimulation(eventDescription: "Thermal surge detected (48.5 C)"))
-        machine.physical = .thermalOverheat(tempC: 48.5)
-        machine.software = .heatProtectionActive
+        battery.isTopUpActive = true
+        if !battery.isTopUpActive { return false }
+        logs.append(machine.stepSimulation(eventDescription: "Top Up activated"))
 
-        logs.append(machine.stepSimulation(eventDescription: "Thermal cooldown (36.0 C)"))
-        machine.physical = .connectedAC(wattage: 65)
-        machine.software = .chargingToLimit(target: 80)
+        battery.isTopUpActive = false
+        if battery.isTopUpActive { return false }
+        logs.append(machine.stepSimulation(eventDescription: "Top Up deactivated, charge limit restored to \(battery.chargeLimit)%"))
 
-        logs.append(machine.stepSimulation(eventDescription: "Target reached (80%)"))
-        machine.software = .holdingAtLimit(target: 80)
+        // 2. Real VirtualDisplayService State Machine Integration
+        let vDisplayService = VirtualDisplayService.shared
+        let vd1 = vDisplayService.createVirtualDisplay(name: "Test Virtual Display 1", width: 1920, height: 1080)
+        let vd2 = vDisplayService.createVirtualDisplay(name: "Test Virtual Display 2", width: 2560, height: 1440)
+        if vd1.activeDisplayID == vd2.activeDisplayID { return false }
+        logs.append(machine.stepSimulation(eventDescription: "Virtual displays created with unique IDs \(vd1.activeDisplayID ?? 0) and \(vd2.activeDisplayID ?? 0)"))
 
-        // 2. Display Hot-Plug & Virtual Display Simulation Loop
-        logs.append(machine.stepSimulation(eventDescription: "External 4K Monitor attached"))
-        machine.physical = .displayPluggedIn(id: 2001, resolution: "3840x2160")
-        machine.software = .displayProfileActive(id: "Desk-4K-Profile")
+        vDisplayService.destroyVirtualDisplay(id: vd1.id)
+        if vDisplayService.descriptors.contains(where: { $0.id == vd1.id }) { return false }
+        logs.append(machine.stepSimulation(eventDescription: "Virtual display \(vd1.id) destroyed cleanly"))
 
-        logs.append(machine.stepSimulation(eventDescription: "Virtual Display created (1080p)"))
-        machine.software = .virtualDisplayActive(id: 10001)
+        // 3. Real Display3DLUTService Validation Integration
+        let lutService = Display3DLUTService.shared
+        let validLUTContent = """
+        TITLE "Test LUT"
+        LUT_3D_SIZE 2
+        0.0 0.0 0.0
+        1.0 0.0 0.0
+        0.0 1.0 0.0
+        1.0 1.0 0.0
+        0.0 0.0 1.0
+        1.0 0.0 1.0
+        0.0 1.0 1.0
+        1.0 1.0 1.0
+        """
+        let lutValidation = lutService.validateLUTFile(content: validLUTContent)
+        if !lutValidation.isValid || lutValidation.size != 2 { return false }
+        logs.append(machine.stepSimulation(eventDescription: "3D LUT format validated: \(lutValidation.title) size \(lutValidation.size)"))
 
-        logs.append(machine.stepSimulation(eventDescription: "PIP Stream started at 60fps"))
-        machine.software = .pipStreamingActive(fps: 60)
+        // 4. Real DisplayAutomationService CLI Integration
+        let autoService = DisplayAutomationService.shared
+        let cliResult = autoService.executeCLICommand("set-brightness 75")
+        if !cliResult.success { return false }
+        logs.append(machine.stepSimulation(eventDescription: "CLI command executed: \(cliResult.message)"))
 
-        logs.append(machine.stepSimulation(eventDescription: "External Monitor detached"))
-        machine.physical = .displayUnplugged(id: 2001)
-        machine.software = .idle
+        // 5. Real DisplayDiagnosticsConsoleService Integration
+        let diagService = DisplayDiagnosticsConsoleService.shared
+        let report = diagService.generateDiagnosticReport()
+        if report.timestamp > Date() { return false }
+        logs.append(machine.stepSimulation(eventDescription: "Display diagnostics report generated with \(report.displayCount) displays"))
 
         for log in logs {
             print("  ✓ \(log)")

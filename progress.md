@@ -1948,16 +1948,16 @@ Use these statuses only: `Not assessed`, `Implemented`, `Partial`, `Experimental
 | BD-09 | Favorite resolutions and keyboard shortcuts | P1 | Done | macOS 14+ Apple Silicon | `DisplayFavoritesService.swift`, `DisplayFavoritesTests.swift` | In-memory lookup & persistence | None |
 | BD-10 | Display groups and synchronized controls | P1 | Done | macOS 14+ Apple Silicon | `DisplayGroupService.swift`, `DisplayGroupTests.swift` | Group state sync & recursion guard | None |
 | BD-11 | Connection/disconnection management | P1 | Done | macOS 14+ Apple Silicon | `DisplayConnectionService.swift`, `DisplayConnectionTests.swift` | Hot-plug listener & state reconciliation | None |
-| BD-12 | Virtual displays and headless modes — advanced / later | P1 | Done | macOS 14+ Apple Silicon | `VirtualDisplayService.swift` | On-demand virtual display frame creation | Simulated display descriptor |
+| BD-12 | Virtual displays and headless modes — advanced / later | P1 | Experimental | macOS 14+ Apple Silicon | `VirtualDisplayService.swift` | Virtual display descriptor management | Virtual display driver integration |
 | BD-13 | DDC/CI hardware controls | P1 | Done | macOS 14+ Apple Silicon | `BrightnessService.swift`, `DDCDisplaySimulatorTests.swift` | Serialized work queue DDC commands & software fallback | Requires DDC/CI hardware support on external displays |
-| BD-14 | HDMI-CEC and external device integrations — advanced / optional | P1 | Done | macOS 14+ Apple Silicon | `HDMICECService.swift` | Opt-in local CEC discovery & command routing | HDMI CEC hardware endpoints |
+| BD-14 | HDMI-CEC and external device integrations — advanced / optional | P1 | Experimental | macOS 14+ Apple Silicon | `HDMICECService.swift` | Opt-in local CEC discovery & command routing | HDMI CEC hardware endpoints |
 | BD-15 | HDR/XDR brightness and presets | P1 | Done | macOS 14+ Apple Silicon | `DisplayHDRService.swift`, `DisplayHDRTests.swift` | Direct preset query & dynamic headroom evaluation | Built-in / HDR displays only |
 | BD-16 | Color profiles, RGB/YCbCr modes and color controls | P1 | Done | macOS 14+ Apple Silicon | `DisplayColorService.swift`, `DisplayColorTests.swift` | ColorSync profile enumeration | None |
-| BD-17 | Custom 3D LUTs | P1 | Done | macOS 14+ Apple Silicon | `Display3DLUTService.swift` | `.cube` format parsing and pipeline binding | None |
-| BD-18 | Picture-in-picture, display streaming and selected-window streaming | P1 | Done | macOS 14+ Apple Silicon | `DisplayPIPService.swift` | Low-overhead capture frame rate bounding | Requires screen capture permission |
+| BD-17 | Custom 3D LUTs | P1 | Partial | macOS 14+ Apple Silicon | `Display3DLUTService.swift` | `.cube` sample parsing & validation | Pipeline color transform binding |
+| BD-18 | Picture-in-picture, display streaming and selected-window streaming | P1 | Partial | macOS 14+ Apple Silicon | `DisplayPIPService.swift` | Screen capture permission check & session management | Direct window frame capture |
 | BD-19 | Display OSD and menu-bar UX | P1 | Done | macOS 14+ Apple Silicon | `BrightnessOSD.swift` | Lightweight HUD overlay | None |
-| BD-20 | Display events, automation, CLI and Shortcuts | P1 | Done | macOS 14+ Apple Silicon | `DisplayAutomationService.swift` | Debounced event queue & CLI verb parsing | None |
-| BD-21 | Display diagnostics and console | P1 | Done | macOS 14+ Apple Silicon | `DisplayDiagnosticsConsoleService.swift` | On-demand sanitized JSON report generation | None |
+| BD-20 | Display events, automation, CLI and Shortcuts | P1 | Partial | macOS 14+ Apple Silicon | `DisplayAutomationService.swift` | Event queue, CLI verb execution, brightness targeting | None |
+| BD-21 | Display diagnostics and console | P1 | Done | macOS 14+ Apple Silicon | `DisplayDiagnosticsConsoleService.swift` | Sanitized JSON report generation with real display queries | None |
 | BD-22 | Localization | P1 | Done | macOS 14+ Apple Silicon | `LocalizationTests.swift` | Zero runtime overhead | None |
 | BAT-01 | Charge Limiter | P0 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift`, `BatteryManagerTests.swift` | Direct SMC key `CH0I` write | Apple Silicon SMC key dependent |
 | BAT-02 | Top Up (temporary 100% override) | P1 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift`, `BatteryManagerTests.swift` | Disconnect detection & target restore | Reverts on power unplug |

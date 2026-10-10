@@ -58,20 +58,29 @@ final class Display3DLUTService: ObservableObject {
         let lines = content.components(separatedBy: .newlines)
         var title = "Custom 3D LUT"
         var lutSize = 0
+        var sampleCount = 0
 
         for line in lines {
             let trimmed = line.trimmingCharacters(in: .whitespaces)
+            if trimmed.isEmpty || trimmed.hasPrefix("#") { continue }
+
             if trimmed.hasPrefix("TITLE ") {
                 title = trimmed.replacingOccurrences(of: "TITLE ", with: "").replacingOccurrences(of: "\"", with: "")
             } else if trimmed.hasPrefix("LUT_3D_SIZE ") {
-                let parts = trimmed.components(separatedBy: .whitespaces)
+                let parts = trimmed.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
                 if parts.count >= 2, let parsed = Int(parts[1]) {
                     lutSize = parsed
+                }
+            } else {
+                let parts = trimmed.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
+                if parts.count == 3, Float(parts[0]) != nil, Float(parts[1]) != nil, Float(parts[2]) != nil {
+                    sampleCount += 1
                 }
             }
         }
 
-        let isValid = (lutSize >= 2 && lutSize <= 256)
+        let expectedSamples = lutSize * lutSize * lutSize
+        let isValid = (lutSize >= 2 && lutSize <= 256 && sampleCount == expectedSamples)
         return (isValid, title, lutSize)
     }
 

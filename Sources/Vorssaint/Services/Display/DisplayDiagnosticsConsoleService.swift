@@ -51,10 +51,19 @@ final class DisplayDiagnosticsConsoleService: ObservableObject {
         for i in 0..<Int(displayCount) {
             let id = displayIDs[i]
             let isMain = (id == mainID)
+            let isBuiltin = CGDisplayIsBuiltin(id) != 0
             let vendor = CGDisplayVendorNumber(id)
             let model = CGDisplayModelNumber(id)
             let serial = CGDisplaySerialNumber(id)
             let redactedSerial = "REDACTED_\(String(serial).hashValue & 0xFFFF)"
+
+            var refreshRateVal: Double = 60.0
+            if let mode = CGDisplayCopyDisplayMode(id) {
+                let modeRefresh = mode.refreshRate
+                if modeRefresh > 0 {
+                    refreshRateVal = modeRefresh
+                }
+            }
 
             let detail = DisplayDiagnosticReport.DisplayDetail(
                 id: id,
@@ -63,13 +72,13 @@ final class DisplayDiagnosticsConsoleService: ObservableObject {
                 serialNumber: redactedSerial,
                 currentWidth: Int(CGDisplayPixelsWide(id)),
                 currentHeight: Int(CGDisplayPixelsHigh(id)),
-                refreshRate: 60.0,
+                refreshRate: refreshRateVal,
                 isMain: isMain,
-                connectionType: isMain ? "Internal (eDP)" : "External (DisplayPort/HDMI)",
+                connectionType: isBuiltin ? "Internal (eDP)" : "External (DisplayPort/HDMI)",
                 supportFlags: [
-                    "DDC_CI": true,
+                    "DDC_CI": !isBuiltin,
                     "HiDPI": true,
-                    "HDR": isMain,
+                    "HDR": isBuiltin,
                     "VRR": false
                 ]
             )

@@ -37,9 +37,16 @@ final class DisplayPIPService: ObservableObject {
 
     private init() {}
 
+    /// Checks actual screen recording access from macOS.
+    func checkScreenRecordingPermission() -> Bool {
+        let granted = CGPreflightScreenCaptureAccess()
+        self.hasScreenRecordingPermission = granted
+        return granted
+    }
+
     /// Starts a picture-in-picture streaming session.
     func startPIPSession(title: String, sourceType: CaptureSourceType, targetID: UInt32, frameRate: Int = 60) -> PIPSession? {
-        guard hasScreenRecordingPermission else {
+        guard checkScreenRecordingPermission() else {
             Self.log.error("PIP session creation failed: Screen recording permission is denied.")
             return nil
         }
