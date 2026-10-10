@@ -196,6 +196,10 @@ struct MetricsTests {
             }),
             ("wallpaper", { WallpaperContract.run(suite) }),
             ("emoji", { CommandBarEmojiContract.run(suite) }),
+            ("simulation", {
+                let ok = SimulationDoubleStateMachinesTests.runSimulationSuite()
+                suite.expect(ok, "Simulation double state machines suite passes")
+            }),
         ]
         var selected = Set<String>()
         var listOnly = false
@@ -215,8 +219,20 @@ struct MetricsTests {
             groups.forEach { print($0.0) }
             exit(0)
         }
-        for (name, body) in groups where selected.isEmpty || selected.contains(name) {
-            suite.run(name, body)
+        for (name, body) in groups {
+            if !selected.isEmpty {
+                if selected.contains(name) {
+                    suite.run(name, body)
+                }
+            } else {
+                // Exclude the intensive simulation suite from default test runs
+                if name != "simulation" {
+                    suite.run(name, body)
+                }
+            }
+        }
+        if selected.isEmpty || !selected.contains("simulation") {
+            print("\n💡 Note: To run the CPU/GPU-intensive Double State Machine Simulation suite, run:\n   ./build.sh --test-suite=simulation (or ./build.sh --test --simulation)\n")
         }
         suite.finish()
     }
