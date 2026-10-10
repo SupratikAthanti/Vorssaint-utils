@@ -38,6 +38,7 @@ for arg in "$@"; do
         --install) INSTALL=1 ;;
         --test)    TEST=1 ;;
         --test-suite=*) TEST=1; TEST_ARGS+=("--suite=${arg#*=}") ;;
+        --simulation) TEST=1; TEST_ARGS+=("--suite=simulation") ;;
         --list-tests) TEST=1; TEST_ARGS+=(--list) ;;
     esac
 done
