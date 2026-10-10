@@ -13,6 +13,14 @@ import VMStatisticsCompat
 
 enum PreferencesFeatureTests {
     static func run(_ suite: TestSuite) {
+        let forgedLinks: [String: Any] = [
+            SettingsBackupSupport.formatVersionKey: SettingsBackupSupport.formatVersion,
+            SettingsBackupSupport.settingsKey: [DefaultsKey.commandBarLinks: Data([1, 2, 3])],
+        ]
+        suite.expect(SettingsBackupSupport.sanitizedSettings(from: forgedLinks)?[DefaultsKey.commandBarLinks] == nil
+                     && !SettingsBackupSupport.keysToClear(whenImporting: [:]).contains(DefaultsKey.commandBarLinks),
+                     "portable imports neither introduce executable launcher authority nor clear trusted local links")
+
         // MARK: Registered defaults
 
         let registeredDefaults = Defaults.registeredDefaults

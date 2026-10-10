@@ -443,20 +443,9 @@ final class DiskImageInstallerService {
     }
 
     private static func run(_ executable: String, arguments: [String]) -> CommandResult {
-        let process = Process()
-        let output = Pipe()
-        process.executableURL = URL(fileURLWithPath: executable)
-        process.arguments = arguments
-        process.standardOutput = output
-        process.standardError = FileHandle.nullDevice
-        do {
-            try process.run()
-        } catch {
-            return CommandResult(status: -1, output: Data())
-        }
-        let data = output.fileHandleForReading.readDataToEndOfFile()
-        process.waitUntilExit()
-        return CommandResult(status: process.terminationStatus, output: data)
+        let result = BoundedProcessRunner.run(executable, arguments,
+                                               timeout: 60, maxOutputBytes: 2 * 1_024 * 1_024)
+        return CommandResult(status: result.status, output: result.output)
     }
 }
 

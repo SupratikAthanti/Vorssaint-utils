@@ -144,6 +144,9 @@ enum SettingsBackupSupport {
         // Restoring it elsewhere could search a different volume or trigger a
         // protected-folder prompt without a fresh choice.
         DefaultsKey.commandBarFileScopes,
+        // Launcher links may contain executable paths and automatic scripts.
+        // Local authority is neither exported nor cleared by portable imports.
+        DefaultsKey.commandBarLinks,
         DefaultsKey.notchDownloadsFolderBookmark,
         DefaultsKey.wallpaperOwnBookmarks,
         DefaultsKey.wallpaperExcludedOwnPaths,

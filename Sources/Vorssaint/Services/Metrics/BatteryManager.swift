@@ -44,6 +44,7 @@ public final class BatteryManager: ObservableObject {
     private var loading = true
     private var evaluating = false
     private var stopped = false
+    private var sleeping = false
     private var ownsOverride = false
     private var chargingInhibited: Bool?
     static let enabledKey = "batteryControlEnabled"
@@ -175,7 +176,7 @@ public final class BatteryManager: ObservableObject {
     }
 
     public func pollTelemetry() {
-        guard !stopped else { return }
+        guard !stopped, !sleeping else { return }
         acceptTelemetry(hardware.sample())
         if controlEnabled, freshTelemetry { checkScheduledTasks() }
     }
@@ -203,7 +204,7 @@ public final class BatteryManager: ObservableObject {
     }
 
     public func evaluatePowerState() {
-        guard !loading, !evaluating, !stopped else { return }
+        guard !loading, !evaluating, !stopped, !sleeping else { return }
         evaluating = true
         defer { evaluating = false }
         guard controlEnabled else {
@@ -290,11 +291,12 @@ public final class BatteryManager: ObservableObject {
     }
 
     func handleSleep() {
+        sleeping = true
         guard controlEnabled, freshTelemetry else { restoreAutomatic(); return }
         _ = apply(inhibited: stopChargingWhenSleeping, discharge: false, preventSleep: false, led: .off)
         telemetry = nil
     }
-    func handleWake() { telemetry = nil; pollTelemetry() }
+    func handleWake() { sleeping = false; telemetry = nil; pollTelemetry() }
     public func shutdown() {
         guard !stopped else { return }
         timer?.invalidate(); timer = nil

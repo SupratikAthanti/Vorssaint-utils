@@ -60,14 +60,22 @@ enum SettingsBackup {
         let coordinator = NSFileCoordinator()
         var error: NSError?
         coordinator.coordinate(readingItemAt: url, options: .withoutChanges, error: &error) { readURL in
-            coordinatedData = try? Data(contentsOf: readURL)
+            coordinatedData = boundedData(at: readURL)
         }
-        guard let data = coordinatedData ?? (try? Data(contentsOf: url)),
+        guard error == nil, let data = coordinatedData,
               let payload = try? PropertyListSerialization.propertyList(from: data,
                                                                         options: [],
                                                                         format: nil) as? [String: Any]
         else { return nil }
         return SettingsBackupSupport.sanitizedSettings(from: payload)
+    }
+
+    private static func boundedData(at url: URL) -> Data? {
+        guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
+        defer { try? handle.close() }
+        let limit = 8 * 1_024 * 1_024
+        guard let data = try? handle.read(upToCount: limit + 1), data.count <= limit else { return nil }
+        return data
     }
 
     /// Clears the exportable keys (unset ones fall back to their registered

@@ -59,20 +59,9 @@ final class FeedbackService {
     static let shared = FeedbackService()
 
     private let endpoint = URL(string: "https://screenshots.vorssaint.com/v1/feedback")!
-    private let session: URLSession
     private let encoder = JSONEncoder()
 
-    private init() {
-        let configuration = URLSessionConfiguration.ephemeral
-        configuration.urlCache = nil
-        configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
-        configuration.httpCookieAcceptPolicy = .never
-        configuration.httpShouldSetCookies = false
-        configuration.timeoutIntervalForRequest = 20
-        configuration.timeoutIntervalForResource = 30
-        configuration.waitsForConnectivity = false
-        session = URLSession(configuration: configuration)
-    }
+    private init() {}
 
     func submit(kind: FeedbackKind,
                 message: String,
@@ -99,7 +88,8 @@ final class FeedbackService {
         let data: Data
         let response: URLResponse
         do {
-            (data, response) = try await session.data(for: request)
+            (data, response) = try await BoundedHTTPClient.load(request, maxBytes: 16 * 1_024,
+                                                           requestTimeout: 20, resourceTimeout: 30)
         } catch {
             throw FeedbackError.unavailable
         }

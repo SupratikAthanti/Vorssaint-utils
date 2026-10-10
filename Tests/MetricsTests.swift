@@ -118,6 +118,7 @@ struct MetricsTests {
                 DisplayRestorationTests.run(suite)
                 DisplayBrightnessTests.run(suite)
                 DDCDisplaySimulatorTests.run(suite)
+                DisplayLUTSecurityTests.run(suite)
                 BrightnessStepTests.run(suite)
                 DisplayModeTests.run(suite)
                 DisplayModeSelectorTests.run(suite)
@@ -156,6 +157,7 @@ struct MetricsTests {
             }),
             ("network", {
                 NetworkFeatureTests.run(suite)
+                BoundedHTTPClientTests.run(suite)
                 SpeedTestTests.run(suite)
                 NetworkAddressTests.run { suite.expect($0, $1) }
             }),

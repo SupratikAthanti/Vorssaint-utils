@@ -49,6 +49,9 @@ def main():
     OUTPUT.mkdir(parents=True, exist_ok=True)
     # Compile complete production services for persistence and control-flow
     # tests; only the actual brightness writer is replaced by an inert sink.
+    write("DisplayLUTContracts.swift", "import Foundation\nenum DisplayLUTContracts {\n"
+          + declaration("Sources/Vorssaint/Services/Display/Display3DLUTService.swift", "    func validateLUTFile(").replace("    func ", "    static func ", 1)
+          + "}\n")
     display_services = ["DisplayGroupService", "DisplayFavoritesService", "DisplayProfileService"]
     write("DisplayServiceContracts.swift", "import AppKit\nimport CoreGraphics\nimport Foundation\nimport os\n"
           + "enum DisplayServiceContracts {\nenum BrightnessService {\nstatic let shared = Sink()\n"

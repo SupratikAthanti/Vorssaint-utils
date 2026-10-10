@@ -517,6 +517,7 @@ if (( TEST )); then
         Sources/Vorssaint/Services/Metrics/BatteryPowerSupport.swift
         Sources/Vorssaint/Services/Metrics/BatteryManager.swift
         Sources/Vorssaint/Services/BoundedProcessRunner.swift
+        Sources/Vorssaint/Services/BoundedHTTPClient.swift
         Sources/Vorssaint/Services/DetachedProcess.swift
         Sources/Vorssaint/Services/ShellSupport.swift
         Sources/Vorssaint/Services/PortManager/PortManagerSupport.swift

@@ -41,6 +41,9 @@ enum AppUpdateFeedSupport {
         statusCode == 404 || statusCode == 410
     }
 
+    /// HTTPS syntax policy only, not a public-address or DNS-rebinding fence.
+    /// Enterprise hosts resolving to internal addresses are supported; sessions
+    /// send no cookies or credentials. The historical name is retained for callers.
     static func publicURL(_ value: String) -> URL? {
         guard let url = URL(string: value), url.scheme?.lowercased() == "https",
               url.user == nil, url.password == nil, url.fragment == nil,

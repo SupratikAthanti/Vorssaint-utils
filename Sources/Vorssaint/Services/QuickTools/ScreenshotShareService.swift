@@ -19,22 +19,12 @@ final class ScreenshotShareService: ObservableObject {
 
     @Published private(set) var records: [ScreenshotShareRecord] = []
 
-    private let session: URLSession
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
     private var expiryRefresh: DispatchWorkItem?
     private var removedRecordIDs = Set<String>()
 
     private init() {
-        let configuration = URLSessionConfiguration.ephemeral
-        configuration.urlCache = nil
-        configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
-        configuration.httpCookieAcceptPolicy = .never
-        configuration.httpShouldSetCookies = false
-        configuration.timeoutIntervalForRequest = 75
-        configuration.timeoutIntervalForResource = 90
-        configuration.waitsForConnectivity = false
-        session = URLSession(configuration: configuration)
         // An expiry that came due during sleep never triggers its timer: the
         // deadline below is armed on a clock that stops with the Mac, so a link
         // that ran out overnight stays listed as live for as long as the Mac
@@ -105,7 +95,7 @@ final class ScreenshotShareService: ObservableObject {
         let data: Data
         let response: URLResponse
         do {
-            (data, response) = try await session.upload(for: request, from: pngData)
+            (data, response) = try await BoundedHTTPClient.load(request, maxBytes: 64 * 1_024, upload: pngData)
         } catch {
             throw ScreenshotShareError.unavailable
         }
@@ -177,7 +167,7 @@ final class ScreenshotShareService: ObservableObject {
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         let response: URLResponse
         do {
-            (_, response) = try await session.data(for: request)
+            (_, response) = try await BoundedHTTPClient.load(request, maxBytes: 16 * 1_024)
         } catch {
             throw ScreenshotShareError.unavailable
         }

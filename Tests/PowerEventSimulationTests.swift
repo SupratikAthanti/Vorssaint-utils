@@ -17,6 +17,9 @@ enum PowerEventSimulationTests {
         battery.handleSleep()
         suite.expect(fixture.hardware.inhibited && !fixture.hardware.discharging && !fixture.hardware.sleepHeld,
                      "sleep entry point inhibits charging without preserving discharge or assertions")
+        fixture.read(charge: 70); battery.chargeLimit = 75
+        suite.expect(fixture.hardware.inhibited && !fixture.hardware.sleepHeld,
+                     "polling and preference changes cannot overwrite the sleep policy before wake")
         battery.handleWake()
         suite.expect(!fixture.hardware.inhibited && battery.isCharging,
                      "wake reads new injected telemetry before resuming")

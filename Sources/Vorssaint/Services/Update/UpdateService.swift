@@ -127,7 +127,15 @@ final class UpdateService: ObservableObject {
         request.setValue("Vorssaint/\(AppInfo.version)", forHTTPHeaderField: "User-Agent")
         request.cachePolicy = .reloadIgnoringLocalCacheData
 
-        URLSession.shared.dataTask(with: request) { [weak self] data, _, error in
+        BoundedHTTPClient.load(request, maxBytes: 2 * 1_024 * 1_024) { [weak self] result in
+            let data: Data?
+            let error: Error?
+            switch result {
+            case .success(let (body, response)):
+                data = (response as? HTTPURLResponse)?.statusCode == 200 ? body : nil
+                error = nil
+            case .failure(let failure): data = nil; error = failure
+            }
             guard let self else { return }
             DispatchQueue.main.async {
                 self.lastChecked = Date()
@@ -186,7 +194,7 @@ final class UpdateService: ObservableObject {
                     self.state = .upToDate
                 }
             }
-        }.resume()
+        }
     }
 
     /// Re-checks only if the last check is stale — called when the app reactivates

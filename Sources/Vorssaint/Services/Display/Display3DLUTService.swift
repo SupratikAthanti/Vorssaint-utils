@@ -55,6 +55,7 @@ final class Display3DLUTService: ObservableObject {
 
     /// Validates .cube LUT file content.
     func validateLUTFile(content: String) -> (isValid: Bool, title: String, size: Int) {
+        guard content.utf8.count <= 32 * 1_024 * 1_024 else { return (false, "", 0) }
         let lines = content.components(separatedBy: .newlines)
         var title = "Custom 3D LUT"
         var lutSize = 0
@@ -68,17 +69,19 @@ final class Display3DLUTService: ObservableObject {
                 title = trimmed.replacingOccurrences(of: "TITLE ", with: "").replacingOccurrences(of: "\"", with: "")
             } else if trimmed.hasPrefix("LUT_3D_SIZE ") {
                 let parts = trimmed.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
-                if parts.count >= 2, let parsed = Int(parts[1]) {
-                    lutSize = parsed
-                }
+                guard lutSize == 0, sampleCount == 0, parts.count == 2,
+                      let parsed = Int(parts[1]), (2...256).contains(parsed) else { return (false, title, 0) }
+                lutSize = parsed
             } else {
                 let parts = trimmed.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
-                if parts.count == 3, Float(parts[0]) != nil, Float(parts[1]) != nil, Float(parts[2]) != nil {
-                    sampleCount += 1
-                }
+                guard lutSize >= 2, parts.count == 3,
+                      parts.allSatisfy({ Float($0)?.isFinite == true }),
+                      sampleCount < lutSize * lutSize * lutSize else { return (false, title, lutSize) }
+                sampleCount += 1
             }
         }
 
+        guard (2...256).contains(lutSize) else { return (false, title, lutSize) }
         let expectedSamples = lutSize * lutSize * lutSize
         let isValid = (lutSize >= 2 && lutSize <= 256 && sampleCount == expectedSamples)
         return (isValid, title, lutSize)
@@ -91,7 +94,11 @@ final class Display3DLUTService: ObservableObject {
             return false
         }
 
-        guard let content = try? String(contentsOfFile: filePath, encoding: .utf8) else {
+        guard let handle = try? FileHandle(forReadingFrom: URL(fileURLWithPath: filePath)) else { return false }
+        defer { try? handle.close() }
+        guard let bytes = try? handle.read(upToCount: 32 * 1_024 * 1_024 + 1),
+              bytes.count <= 32 * 1_024 * 1_024,
+              let content = String(data: bytes, encoding: .utf8) else {
             Self.log.error("LUT import failed: Unable to read content from '\(filePath)'")
             return false
         }

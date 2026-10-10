@@ -371,8 +371,9 @@ struct NotchLockScreenActivities: View {
             if let countdown = calendar.countdown {
                 let text = FeatureStrings.notchCalendar(l10n.language)
                 HStack(spacing: 7) {
-                    Image(systemName: "calendar").foregroundStyle(countdown.event.color.color)
-                    Text(NotchCalendarStrip.displayTitle(countdown.event, untitled: text.untitled))
+                    Image(systemName: "calendar").foregroundStyle(.white)
+                    // No event title or calendar identity is disclosed while locked.
+                    Text(countdown.ongoing ? text.ongoing : text.next)
                         .frame(maxWidth: 240, alignment: .leading)
                         .fixedSize(horizontal: false, vertical: true)
                     Text(NotchCalendarSupport.countdownText(until: countdown.target, now: date))

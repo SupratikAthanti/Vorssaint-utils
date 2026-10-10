@@ -1,6 +1,47 @@
 # Tests-first security review — 2026-10-09
 
-Reviewed commit: `0d7939738cca623d32da9bac470750ea323f7840` (branch `New-Functions`).
+Baseline reviewed commit: `0d7939738cca623d32da9bac470750ea323f7840` (branch `New-Functions`).
+
+## Remediation and second review
+
+The baseline sections below are historical evidence, not a description of the repaired tree. Local checkpoint commits `06f93872` and `61edf412` contain battery/test isolation and filesystem hardening; subsequent remediation covers networking, parsers, imported authority, privacy, and second-pass findings. No commits were pushed.
+
+### Changes by finding
+
+- **S1:** unique owner-only updater work directory on the destination filesystem; copied DMG verified and mounted read-only; protected stage and backup; predictable recursive cleanup removed. Elevated installs accept only direct, non-symlink app paths under root-owned, mode-0755 `/Applications` without an extended ACL. Work-directory ACLs are stripped. Published elevated bundles remain root-owned, relaunch drops UID as well as selecting the GUI session, and failed rollback backups are retained. Custom directories requiring elevation are intentionally refused, not silently supported.
+- **S2:** injected hardware/telemetry/clock/defaults, no native battery singleton in the unit-test build, explicit control opt-in, fresh telemetry and range gates, hardware read-back, error reporting, write-ahead recovery debt, thermal/discharge cleanup, shutdown and sleep/wake handling. The production adapter alone opens SMC. Display group/profile/favorites tests now execute current production services rather than test-owned algorithms; duplicate fingerprints and invalid layout coordinates are refused. DDC tests are registered and concrete test-input defects removed.
+- **S3:** no-follow descriptor traversal, descriptor-relative exclusive temporary creation and rename, permission/owner checks before publication, error propagation, and macOS ACL removal. Redirected ancestors fail closed; leaf symlinks are replaced, not followed. This is not encryption or a same-account security boundary. Nonstandard symlinked home/store ancestors may be refused.
+- **S4:** validate size before multiplication, reject duplicate headers and nonfinite/malformed samples, bound import reads and parser bytes to 32 MiB.
+- **S5:** shared incremental response collector used for sharing uploads/deletions, feedback, and self-update metadata; byte ceilings enforced before retaining each chunk, credential/cookie storage disabled, redirects refused. Existing feedback and video-upload time budgets preserved. Added delegate tests and real loopback transport checks.
+- **S6:** explicitly documented internal-resolving HTTPS feeds as supported. The syntax filter is not claimed to prevent DNS rebinding or internal-address access. Cookies and credentials remain disabled. This is a clarified policy, not a public-destination enforcement implementation.
+- **S7:** executable-capable launcher links excluded from portable export/import and import clearing; locally trusted links retained. Backup reads bounded to 8 MiB before plist parsing, with no uncoordinated fallback after coordination failure.
+- **S8:** lock-screen calendar titles/colors replaced by generic localized next/ongoing labels; calendar timing remains visible. Documentation now explains that enabled lock-screen countdowns restart calendar readings in memory.
+- **S9:** disk-image commands use the existing bounded runner with a 60-second deadline and 2 MiB retained-output limit.
+
+### Additional findings during re-review
+
+Re-examined repaired battery transitions, updater cleanup/relaunch/destination checks, descriptor storage, response collection, and changed call sites. Fixed: polling/preference changes overriding sleep policy before wake; root relaunch fallback; recursive cleanup after failed image detach; deletion of a backup when rollback itself failed; extended ACL and nested app-path acceptance at the elevated destination boundary. Tests now assert that polling cannot undo the sleep hold.
+
+This was another targeted manual pass, not exhaustive certification. Remaining **validation blockers**, not passes: optimized macOS build/typecheck, full unit executable and mutations, real admin/nonadmin updater install and rollback tests, codesign/Gatekeeper rejection, Apple ACL behavior, lock-screen GUI/accessibility checks, XPC/TCC negatives, and hardware SMC read-back/safety tests. In particular, shell syntax and source contracts do not prove elevated filesystem integrity. Shell copy/mount/assessment commands still need macOS fault-injection/deadline testing; unexpected FIFOs/devices in download inputs and interrupted installation are residual availability/recovery cases to test. Same-account attackers remain outside the private-store confidentiality boundary.
+
+### Verification actually rerun on Linux
+
+A signature-verified Swift 6.0.3 toolchain was unpacked under ignored `build/security-toolchain`; no system-wide install was performed.
+
+| Check | Final result | Scope |
+|---|---|---|
+| Production battery engine with inert hardware and isolated defaults | PASS: 30 assertions, plus 30 physical/software combinations | No Apple hardware/Combine runtime |
+| Production private store filesystem regressions | PASS: 8 assertions | Linux POSIX; macOS ACL branch untested |
+| Current extracted production LUT parser | PASS: 11 assertions | Overflow headers, duplicates, nonfinite samples, sample ordering/count |
+| Production HTTP delegate regressions | PASS: 4 assertions | Incremental overflow and redirect failure |
+| Real HTTP collector requests to loopback fixture | PASS: 4 requests | Small response, excessive Content-Length, excessive unknown-length body, redirect; fixture stopped afterward |
+| Swift collector typecheck and changed Swift source parsing | PASS | Parsing does not resolve Apple APIs or prove full app compilation |
+| Test source generation and Python AST checks | PASS | Extraction/syntax, not full macOS suite |
+| Final extracted installer `/bin/sh -n` and `git diff --check` | PASS | Syntax/whitespace only |
+
+The Linux battery test link emits an RWX-segment warning; the portable executable is an ignored verification artifact, not a release app. No claim is made that Linux checks replace the macOS release gates.
+
+---
 
 ## Executive summary
 

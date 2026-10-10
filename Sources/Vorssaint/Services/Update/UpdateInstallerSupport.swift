@@ -74,12 +74,17 @@ enum UpdateInstallerSupport {
             # operate in a user-controlled custom directory or destination tree.
             [ "$DIR" = /Applications ] && [ ! -L /Applications ] \
                 && [ "$(/usr/bin/stat -f '%u:%Lp' /Applications)" = '0:755' ] \
+                && [ "$(/bin/ls -ld /Applications | /usr/bin/awk '{print $1}')" = drwxr-xr-x ] \
                 || { finalize; exit 1; }
-            case "$APP" in /Applications/*.app) ;; *) finalize; exit 1;; esac
+            BASE="$(/usr/bin/basename "$APP")"
+            [ "$APP" = "/Applications/$BASE" ] && [ ! -L "$APP" ] \
+                || { finalize; exit 1; }
+            case "$BASE" in *.app) ;; *) finalize; exit 1;; esac
         fi
         WORK="$(/usr/bin/mktemp -d "$DIR/.vorssaint-update.XXXXXXXX")" \
             || { note fail-copy; finalize; exit 1; }
-        /bin/chmod 700 "$WORK" || { finalize; exit 1; }
+        /bin/chmod -N "$WORK" && /bin/chmod 700 "$WORK" \
+            || { finalize; exit 1; }
         MNT="$WORK/mount"
         STAGE="$WORK/new.app"
         BACKUP="$WORK/old.app"
@@ -124,12 +129,13 @@ enum UpdateInstallerSupport {
             DIR="$(/usr/bin/dirname "$APP")"
             NAME="$(/usr/bin/basename "$SRC")"
             DEST="$DIR/$NAME"
-            # Stage the full copy FIRST; the old app is only removed after the
-            # copy completed, so a failure mid-copy never leaves the user with no
-            # app at all. The staging name is hidden: Spotlight recognizes the
-            # copy as an app bundle whatever its suffix, and when the swap lands
-            # while that copy is still being indexed, the installed app keeps
-            # showing up in search as "Vorssaint.app.update-new".
+            if [ -L "$DEST" ] || { [ -e "$DEST" ] && [ ! -d "$DEST" ]; }; then
+                note fail-unsafe-destination
+                /usr/bin/hdiutil detach "$MNT" -quiet 2>/dev/null
+                finalize; exit 1
+            fi
+            # Stage the full copy first; the original survives copy failure.
+            # The private hidden work directory also avoids indexing the stage.
             # STAGE remains inside the unique owner-only work directory.
             case "$NAME" in *.app) ;; *) note fail-no-app-in-dmg; finalize; exit 1;; esac
             note fail-copy
