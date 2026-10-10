@@ -116,10 +116,24 @@ struct MetricsTests {
             }),
             ("display-restoration", {
                 DisplayRestorationTests.run(suite)
+                DisplayBrightnessTests.run(suite)
                 BrightnessStepTests.run(suite)
-                DDCDisplaySimulatorTests.run(suite)
+                DisplayModeTests.run(suite)
+                DisplayModeSelectorTests.run(suite)
+                DisplayRefreshRateTests.run(suite)
+                DisplayArrangementTests.run(suite)
+                DisplayProfileTests.run(suite)
+                DisplayFavoritesTests.run(suite)
+                DisplayGroupTests.run(suite)
+                DisplayConnectionTests.run(suite)
+                DisplayHDRTests.run(suite)
+                DisplayColorTests.run(suite)
             }),
-            ("software-dimming", { SoftwareDimmingRouteTests.run { suite.expect($0, $1) } }),
+            ("display-inventory", { DisplayInventoryTests.run(suite) }),
+            ("software-dimming", { 
+                SoftwareDimmingRouteTests.run { suite.expect($0, $1) }
+                DisplayDimmingTests.run { suite.expect($0, $1) }
+            }),
             ("capture", { ScreenshotSelectionRefreshContract.run(suite) }),
             ("keyboard", {
                 KeyboardFeatureTests.run(suite)

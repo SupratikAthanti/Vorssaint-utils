@@ -483,13 +483,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Provide optional clocks for selected time zones in the menu bar/panel.
 
@@ -628,13 +628,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Enumerate supported display modes and allow changing resolution from Settings/menu bar.
 
@@ -652,13 +652,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Switch among available refresh rates (for example 60/120 Hz) for each display, where the OS/monitor exposes those modes.
 
@@ -674,13 +674,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Select UI scaling choices separately from physical output resolution, making it clear how sharpness, UI size, and effective workspace change.
 
@@ -697,13 +697,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Show a canvas with display rectangles that can be dragged into relative positions. Support identifying the active display and restoring a saved arrangement.
 
@@ -721,13 +721,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Store display setup profiles: layout, mode, refresh rate, rotation, scale and color profile when those settings can be captured/restored reliably. Auto-reapply a selected profile after an external monitor reconnects.
 
@@ -744,13 +744,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Save favorite modes per display and define global or per-display hotkeys for brightness, mode/profile changes and rotation, where allowed.
 
@@ -762,13 +762,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Group selected displays and synchronize brightness, software image controls and UI scale when comparable controls are supported.
 
@@ -785,13 +785,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Switch between display setups, disconnect/reconnect external displays through supported interfaces, and optionally disable the internal panel when an external display is connected on compatible Apple Silicon Macs.
 
@@ -808,13 +808,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Create/associate virtual displays with configurable dimensions/aspect ratios, including a persistent desktop for remote/headless workflows where supported.
 
@@ -831,13 +831,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** For compatible monitors, expose brightness, contrast, input switching, volume, color-channel gain and power controls supported by the monitor.
 
@@ -854,13 +854,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** On compatible HDMI paths, control TV volume/mute/power/input; optionally support documented integrations for supported smart TVs and AV receivers.
 
@@ -877,13 +877,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Expose the system's supported HDR/XDR brightness, SDR/HDR color modes and Apple display presets where available.
 
@@ -900,13 +900,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** List/select installed color profiles and supported display output modes; optional software color temperature, hue/saturation, geometry, sharpening and other image adjustments.
 
@@ -923,13 +923,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Import a 3D LUT and apply it to supported display adjustment or video preview/streaming paths.
 
@@ -945,13 +945,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Show a display, a virtual display, a selected window or a group of windows in a movable picture-in-picture window; optionally stream/crop/rotate/flip it, target a frame rate, or create teleprompter/portrait workflows.
 
@@ -991,13 +991,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** Run user-configured actions when a display connects/disconnects or the Mac sleeps/wakes; expose profile/mode/brightness actions to Shortcuts and optionally a local CLI/API.
 
@@ -1014,13 +1014,13 @@ Build a **native, lightweight Sankey-style flow view**, not a generic line chart
 
 **Session checklist**
 
-- [ ] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
-- [ ] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
-- [ ] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
-- [ ] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
-- [ ] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
-- [ ] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
-- [ ] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
+- [x] **Inspect:** locate the current implementation and dependencies; record what can be reused before editing.
+- [x] **Plan:** state the intended files/services/UI changes, capability constraints, permission impact, and a narrow definition of done.
+- [x] **Implement:** change only this session's feature; use shared services and the existing feature catalog instead of duplicating polling or state.
+- [x] **Test:** add/update unit tests for normal, failure, unsupported, stale-data, cancellation, and conflict cases that apply to this feature.
+- [x] **Integrate:** wire settings, localization, settings backup, feature enable/disable cleanup, permissions, and diagnostics where applicable.
+- [x] **Verify:** build the app and run the relevant test suite/self-test; exercise hardware/UI behavior when needed or record why it remains unverified.
+- [x] **Record:** update `docs/unified-utility-implementation-status.md` with status, commit/evidence, hardware/macOS tested, and remaining limitations.
 
 **Description:** A copyable diagnostics panel for mode list, EDID/DPCD/DSC information, connection/bandwidth/compression/tiling where available, support flags, and recent action logs.
 
@@ -1936,11 +1936,11 @@ Use these statuses only: `Not assessed`, `Implemented`, `Partial`, `Experimental
 | BD-01 | Display inventory and diagnostics | P0 | Done | macOS 14+ Apple Silicon | `BrightnessService.swift`, `PointerDisplayService.swift` | CoreGraphics display list queries | Active display ID persistence |
 | BD-02 | Per-display brightness controls — reuse/extend | P0 | Done | macOS 14+ Apple Silicon | `BrightnessService.swift` | DisplayServices & DDC/CI I2C | Requires DDC/CI support on external |
 | BD-03 | Extra dimming below normal minimum | P1 | Done | macOS 14+ Apple Silicon | `ExtraBrightnessService.swift` | CGSetDisplayTransferByTable gamma scaling | Software overlay effect |
-| BD-04 | Resolution and display mode selector — requested priority | P0 | Not assessed | — | — | — | — |
-| BD-05 | Refresh-rate selector — requested priority | P0 | Not assessed | — | — | — | — |
-| BD-06 | HiDPI / scaling controls — requested priority | P0 | Not assessed | — | — | — | — |
-| BD-07 | Visual multi-display arrangement — requested priority | P0 | Not assessed | — | — | — | — |
-| BD-08 | Layout/configuration protection and profiles | P1 | Not assessed | — | — | — | — |
+| BD-04 | Resolution and display mode selector — requested priority | P0 | Done | macOS 14+ Apple Silicon | `DisplayModeSupport.swift`, `DisplayModeService.swift` | CGDisplayMode enumeration & rollback timer | None |
+| BD-05 | Refresh-rate selector — requested priority | P0 | Done | macOS 14+ Apple Silicon | `DisplayModeSupport.swift`, `DisplayModeService.swift` | Mode refresh rate derivation & rounding | None |
+| BD-06 | HiDPI / scaling controls — requested priority | P0 | Done | macOS 14+ Apple Silicon | `DisplayModeSupport.swift`, `DisplayModeService.swift` | HiDPI scale factor calculation | None |
+| BD-07 | Visual multi-display arrangement — requested priority | P0 | Done | macOS 14+ Apple Silicon | `DisplayArrangementSupport.swift`, `DisplayArrangementCanvas.swift` | Geometric bounding box & drag snapping | None |
+| BD-08 | Layout/configuration protection and profiles | P1 | Done | macOS 14+ Apple Silicon | `DisplayProfileService.swift`, `DisplayProfileSettings.swift` | Stable identity hashing & profile storage | None |
 | BD-09 | Favorite resolutions and keyboard shortcuts | P1 | Not assessed | — | — | — | — |
 | BD-10 | Display groups and synchronized controls | P1 | Not assessed | — | — | — | — |
 | BD-11 | Connection/disconnection management | P1 | Not assessed | — | — | — | — |

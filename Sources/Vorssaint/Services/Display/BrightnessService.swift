@@ -2103,6 +2103,7 @@ final class BrightnessService: ObservableObject {
                     // The channel rejects every write (typically an HDMI
                     // conversion in the path): dim in the video pipeline
                     // instead, which works on any connection.
+                    Self.log.log("DDC channel dead for display \(id); falling back to software dimming.")
                     break
                 }
             }
