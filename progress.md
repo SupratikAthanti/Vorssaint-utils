@@ -5,13 +5,17 @@
 **Primary repository:** <https://github.com/vorssaint/vorssaint-utils>  
 **Target platform:** Existing Vorssaint target: macOS 14+ on Apple Silicon unless a feature is explicitly marked otherwise.
 
+## Future Roadmap & Planned Features
+
+- [ ] **Realistic Simulation Double State Machines**: Implement comprehensive, realistic simulation double state machines for all app features to verify full application behavior without requiring full physical hardware integration or macOS execution suites.
+
 ## Roadmap progress dashboard
 
 Update these boxes as phases are accepted. A phase is not complete just because its sessions compile; use the session checklists, evidence, and the definition of done at the end of this document.
 
 - [x] **Phase 0 — Repository audit and baseline**
 - [x] **Phase 1 — Stats: system monitoring**
-- [ ] **Phase 2 — BetterDisplay: display controls**
+- [x] **Phase 2 — BetterDisplay: display controls**
 - [x] **Phase 3 — AlDente-style battery and power management**
 - [x] **Phase 4 — Cross-feature integration and conflict handling**
 - [x] **Phase 5 — Performance, memory, and energy benchmark**
@@ -1941,14 +1945,14 @@ Use these statuses only: `Not assessed`, `Implemented`, `Partial`, `Experimental
 | BD-06 | HiDPI / scaling controls — requested priority | P0 | Done | macOS 14+ Apple Silicon | `DisplayModeSupport.swift`, `DisplayModeService.swift` | HiDPI scale factor calculation | None |
 | BD-07 | Visual multi-display arrangement — requested priority | P0 | Done | macOS 14+ Apple Silicon | `DisplayArrangementSupport.swift`, `DisplayArrangementCanvas.swift` | Geometric bounding box & drag snapping | None |
 | BD-08 | Layout/configuration protection and profiles | P1 | Done | macOS 14+ Apple Silicon | `DisplayProfileService.swift`, `DisplayProfileSettings.swift` | Stable identity hashing & profile storage | None |
-| BD-09 | Favorite resolutions and keyboard shortcuts | P1 | Not assessed | — | — | — | — |
-| BD-10 | Display groups and synchronized controls | P1 | Not assessed | — | — | — | — |
-| BD-11 | Connection/disconnection management | P1 | Not assessed | — | — | — | — |
+| BD-09 | Favorite resolutions and keyboard shortcuts | P1 | Done | macOS 14+ Apple Silicon | `DisplayFavoritesService.swift`, `DisplayFavoritesTests.swift` | In-memory lookup & persistence | None |
+| BD-10 | Display groups and synchronized controls | P1 | Done | macOS 14+ Apple Silicon | `DisplayGroupService.swift`, `DisplayGroupTests.swift` | Group state sync & recursion guard | None |
+| BD-11 | Connection/disconnection management | P1 | Done | macOS 14+ Apple Silicon | `DisplayConnectionService.swift`, `DisplayConnectionTests.swift` | Hot-plug listener & state reconciliation | None |
 | BD-12 | Virtual displays and headless modes — advanced / later | P1 | Not assessed | — | — | — | — |
 | BD-13 | DDC/CI hardware controls | P1 | Done | macOS 14+ Apple Silicon | `BrightnessService.swift`, `DDCDisplaySimulatorTests.swift` | Serialized work queue DDC commands & software fallback | Requires DDC/CI hardware support on external displays |
 | BD-14 | HDMI-CEC and external device integrations — advanced / optional | P1 | Not assessed | — | — | — | — |
-| BD-15 | HDR/XDR brightness and presets | P1 | Not assessed | — | — | — | — |
-| BD-16 | Color profiles, RGB/YCbCr modes and color controls | P1 | Not assessed | — | — | — | — |
+| BD-15 | HDR/XDR brightness and presets | P1 | Done | macOS 14+ Apple Silicon | `DisplayHDRService.swift`, `DisplayHDRTests.swift` | Direct preset query & dynamic headroom evaluation | Built-in / HDR displays only |
+| BD-16 | Color profiles, RGB/YCbCr modes and color controls | P1 | Done | macOS 14+ Apple Silicon | `DisplayColorService.swift`, `DisplayColorTests.swift` | ColorSync profile enumeration | None |
 | BD-17 | Custom 3D LUTs | P1 | Not assessed | — | — | — | — |
 | BD-18 | Picture-in-picture, display streaming and selected-window streaming | P1 | Not assessed | — | — | — | — |
 | BD-19 | Display OSD and menu-bar UX | P1 | Done | macOS 14+ Apple Silicon | `BrightnessOSD.swift` | Lightweight HUD overlay | None |
