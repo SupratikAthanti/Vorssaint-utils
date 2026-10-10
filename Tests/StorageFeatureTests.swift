@@ -60,6 +60,8 @@ enum StorageFeatureTests {
         suite.expect(sharedUISource.contains("uninstallerFailedNeedsFDA"),
                "the failure note explains the permission the removal needed")
 
+        PrivateFileStoreSecurityTests.run(suite)
+
         // MARK: Private file store
 
         let privateRoot = FileManager.default.temporaryDirectory

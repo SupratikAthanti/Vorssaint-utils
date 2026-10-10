@@ -54,29 +54,60 @@ enum UpdateInstallerSupport {
             fi
             /bin/mv -f "$RESULT.progress" "$RESULT" 2>/dev/null
         }
-        cleanup_script() { case "$SCRIPT" in /*) /bin/rm -f "$SCRIPT";; esac; }
+        cleanup_script() {
+            # An elevated inline script must never remove a user-supplied path.
+            running_as_root && return
+            case "$SCRIPT" in /*) /bin/rm -f "$SCRIPT";; esac
+        }
         relaunch() {
             if [ -n "$ASUSER" ] && [ "$(/usr/bin/id -u)" = "0" ]; then
-                /bin/launchctl asuser "$ASUSER" /usr/bin/open "$1" && return
+                /bin/launchctl asuser "$ASUSER" /usr/bin/sudo -n -u "#$ASUSER" /usr/bin/open "$1"
+                return
             fi
             /usr/bin/open "$1"
         }
-        while kill -0 "$PID" 2>/dev/null; do sleep 0.3; done
+        umask 077
+        DIR="$(/usr/bin/dirname "$APP")"
+        note fail-unsafe-destination
+        if running_as_root; then
+            # Elevated installs are deliberately restricted. Never recursively
+            # operate in a user-controlled custom directory or destination tree.
+            [ "$DIR" = /Applications ] && [ ! -L /Applications ] \
+                && [ "$(/usr/bin/stat -f '%u:%Lp' /Applications)" = '0:755' ] \
+                || { finalize; exit 1; }
+            case "$APP" in /Applications/*.app) ;; *) finalize; exit 1;; esac
+        fi
+        WORK="$(/usr/bin/mktemp -d "$DIR/.vorssaint-update.XXXXXXXX")" \
+            || { note fail-copy; finalize; exit 1; }
+        /bin/chmod 700 "$WORK" || { finalize; exit 1; }
+        MNT="$WORK/mount"
+        STAGE="$WORK/new.app"
+        BACKUP="$WORK/old.app"
+        # Snapshot untrusted input before verification; all later consumption
+        # uses this protected copy, never the original mutable download path.
+        note fail-copy
+        /bin/cp "$DMG" "$WORK/update.dmg" || { finalize; /bin/rm -rf "$WORK"; exit 1; }
+        DMG="$WORK/update.dmg"
+        WAIT=0
+        while kill -0 "$PID" 2>/dev/null; do
+            [ "$WAIT" -lt 200 ] || { finalize; /bin/rm -rf "$WORK"; exit 1; }
+            sleep 0.3; WAIT=$((WAIT + 1))
+        done
         note fail-dmg-verify
         DMG_VERIFY_REQ='anchor apple generic and certificate leaf[subject.OU] = "3D485NHW29"'
         if ! /usr/bin/codesign -v --strict -R="$DMG_VERIFY_REQ" "$DMG" 2>/dev/null; then
-            /bin/rm -f "$DMG"
+            /bin/rm -rf "$WORK"
             finalize
             relaunch "$APP"
             cleanup_script
             exit 1
         fi
         note fail-tempdir
-        MNT="$(/usr/bin/mktemp -d)" || { /bin/rm -f "$DMG"; finalize; relaunch "$APP"; cleanup_script; exit 1; }
+        /bin/mkdir "$MNT" || { /bin/rm -rf "$WORK"; finalize; relaunch "$APP"; cleanup_script; exit 1; }
         note fail-mount
-        if ! /usr/bin/hdiutil attach "$DMG" -nobrowse -quiet -mountpoint "$MNT"; then
+        if ! /usr/bin/hdiutil attach "$DMG" -readonly -nobrowse -quiet -mountpoint "$MNT"; then
             /bin/rmdir "$MNT" 2>/dev/null
-            /bin/rm -f "$DMG"
+            /bin/rm -rf "$WORK"
             finalize
             relaunch "$APP"
             cleanup_script
@@ -99,10 +130,8 @@ enum UpdateInstallerSupport {
             # copy as an app bundle whatever its suffix, and when the swap lands
             # while that copy is still being indexed, the installed app keeps
             # showing up in search as "Vorssaint.app.update-new".
-            STAGE="$DIR/.$NAME.update-new"
-            # A copy an earlier build left behind under the visible name is the
-            # same leftover, still indexed; it goes with this one.
-            /bin/rm -rf "$STAGE" "$DEST.update-new"
+            # STAGE remains inside the unique owner-only work directory.
+            case "$NAME" in *.app) ;; *) note fail-no-app-in-dmg; finalize; exit 1;; esac
             note fail-copy
             if /usr/bin/ditto "$SRC" "$STAGE"; then
                 # Clear ALL xattrs (quarantine + FinderInfo the DMG round-trip
@@ -125,23 +154,14 @@ enum UpdateInstallerSupport {
                     if /usr/bin/codesign -v --deep --strict -R="$VERIFY_REQ" "$STAGE" 2>/dev/null \
                         && [ "$GATEKEEPER_OK" = 1 ]; then
                         note fail-swap
-                        # The backup name is unique per run: after an elevated
-                        # install the old bundle is root-owned, a later user-run
-                        # cannot delete that backup, and reusing a fixed name
-                        # would make the NEXT swap fail on it. Strays from
-                        # earlier runs are swept best-effort (an elevated run
-                        # clears even the root-owned ones).
-                        BACKUP="$DEST.update-old.$PID"
-                        /bin/rm -rf "$DEST".update-old "$DEST".update-old.* 2>/dev/null
+                        # BACKUP is unique and protected; never sweep predictable
+                        # user-controlled paths with elevated recursive deletion.
                         if { [ ! -d "$DEST" ] || /bin/mv "$DEST" "$BACKUP"; } \
                             && /bin/mv "$STAGE" "$DEST"; then
                             LAUNCH="$DEST"
                             note ok
-                            # Installed as root: hand the bundle to the user, or
-                            # the next user-path update cannot replace it.
-                            if [ "$(/usr/bin/id -u)" = "0" ] && [ -n "$ASUSER" ]; then
-                                /usr/sbin/chown -R "$ASUSER" "$DEST" 2>/dev/null
-                            fi
+                            # Elevated bundles stay root-owned. Recursive chown
+                            # after publication would reopen a replacement race.
                             /bin/rm -rf "$BACKUP"
                             # If the bundle was renamed, remove the old-named one.
                             # This happens only after the new bundle is in place.
@@ -154,11 +174,13 @@ enum UpdateInstallerSupport {
             fi
             /bin/rm -rf "$STAGE"
         fi
-        /usr/bin/hdiutil detach "$MNT" -quiet 2>/dev/null \
-            || /usr/bin/hdiutil detach "$MNT" -force -quiet 2>/dev/null \
-            || true
-        /bin/rmdir "$MNT" 2>/dev/null
-        /bin/rm -f "$DMG"
+        # Never recurse into a still-mounted image, and preserve the backup
+        # for manual recovery if rollback itself failed.
+        if /usr/bin/hdiutil detach "$MNT" -quiet 2>/dev/null \
+            || /usr/bin/hdiutil detach "$MNT" -force -quiet 2>/dev/null; then
+            /bin/rmdir "$MNT" 2>/dev/null
+            [ -e "$BACKUP" ] || /bin/rm -rf "$WORK"
+        fi
         finalize
         relaunch "$LAUNCH"
         cleanup_script
