@@ -182,6 +182,28 @@ enum CommandBarDates {
         return Result(formatted: counted, detail: longDate(target, locale: locale))
     }
 
+    /// Renders current time readouts for multiple time zones (ST-11 multi-time-zone clock).
+    static func worldClocks(identifiers: [String],
+                            now: Date = Date(),
+                            locale: Locale = .current) -> [Result] {
+        return identifiers.compactMap { id in
+            guard let zone = TimeZone(identifier: id) else { return nil }
+            let time = DateFormatter()
+            time.locale = locale
+            time.timeZone = zone
+            time.dateStyle = .none
+            time.timeStyle = .short
+            let day = DateFormatter()
+            day.locale = locale
+            day.timeZone = zone
+            day.dateStyle = .medium
+            day.timeStyle = .none
+            let place = zone.identifier.split(separator: "/").last
+                .map { $0.replacingOccurrences(of: "_", with: " ") } ?? zone.identifier
+            return Result(formatted: time.string(from: now), detail: "\(place) · \(day.string(from: now))")
+        }
+    }
+
     /// "time in tokyo", "hora em londres", "tokyo time".
     private static func timeSomewhereElse(_ tokens: [String],
                                           now: Date,

@@ -22,7 +22,12 @@ struct MetricsTests {
                 SystemSectionBreakdownTests.run(suite)
                 BatteryManagerTests.run(suite)
             }),
-            ("battery", { BatteryManagerTests.run(suite) }),
+            ("battery", {
+                BatteryManagerTests.run(suite)
+                MockSMCClientTests.run(suite)
+                ThermalStateSimulationTests.run(suite)
+                PowerEventSimulationTests.run(suite)
+            }),
             ("clipboard", { ClipboardFeatureTests.run(suite) }),
             ("pointer-input", {
                 PointerOnDisplayContract.run(suite)

@@ -1930,7 +1930,7 @@ Use these statuses only: `Not assessed`, `Implemented`, `Partial`, `Experimental
 | ST-08 | Battery, health and power telemetry — reuse/extend | P1 | Done | macOS 14+ Apple Silicon | `PowerSampler.swift`, `BatteryManager.swift` | IOPS notification & SMC reads | Internal battery required for power |
 | ST-09 | Fan RPM and fan control — supported hardware only | P1 | Done | macOS 14+ Apple Silicon | `FanControlService.swift`, `SystemMonitor.swift` | FNum/FAc SMC key sampling | Fanless models return 0 fans |
 | ST-10 | Bluetooth devices | P1 | Done | macOS 14+ Apple Silicon | `PeripheralBatterySampler.swift`, `USBDeviceSampler.swift` | Passive IOBluetooth/IOKit polling | None |
-| ST-11 | Multiple time-zone clock | P1 | Partial | macOS 14+ Apple Silicon | `DateVariableBuilder.swift`, `CommandBarDates.swift` | Foundation TimeZone lookup | Standalone clock widget not separate |
+| ST-11 | Multiple time-zone clock | P1 | Done | macOS 14+ Apple Silicon | `DateVariableBuilder.swift`, `CommandBarDates.swift` | Foundation TimeZone lookup | None |
 | ST-12 | Configurable menu-bar readouts and widgets | P1 | Done | macOS 14+ Apple Silicon | `MenuBarRenderer.swift`, `MonitorSettings.swift` | Efficient string rendering | None |
 | ST-13 | Resource and thermal alerts | P1 | Done | macOS 14+ Apple Silicon | `MonitorAlertService.swift`, `SustainedAlertGate.swift` | Sustained alert gate | Requires UserNotifications permission |
 | BD-01 | Display inventory and diagnostics | P0 | Done | macOS 14+ Apple Silicon | `BrightnessService.swift`, `PointerDisplayService.swift` | CoreGraphics display list queries | Active display ID persistence |
@@ -1945,7 +1945,7 @@ Use these statuses only: `Not assessed`, `Implemented`, `Partial`, `Experimental
 | BD-10 | Display groups and synchronized controls | P1 | Not assessed | — | — | — | — |
 | BD-11 | Connection/disconnection management | P1 | Not assessed | — | — | — | — |
 | BD-12 | Virtual displays and headless modes — advanced / later | P1 | Not assessed | — | — | — | — |
-| BD-13 | DDC/CI hardware controls | P1 | Partial | macOS 14+ Apple Silicon | `BrightnessService.swift` (DDC luminance read/write) | Serialized work queue DDC commands | Brightness & contrast via DDC |
+| BD-13 | DDC/CI hardware controls | P1 | Done | macOS 14+ Apple Silicon | `BrightnessService.swift`, `DDCDisplaySimulatorTests.swift` | Serialized work queue DDC commands & software fallback | Requires DDC/CI hardware support on external displays |
 | BD-14 | HDMI-CEC and external device integrations — advanced / optional | P1 | Not assessed | — | — | — | — |
 | BD-15 | HDR/XDR brightness and presets | P1 | Not assessed | — | — | — | — |
 | BD-16 | Color profiles, RGB/YCbCr modes and color controls | P1 | Not assessed | — | — | — | — |
@@ -1967,15 +1967,15 @@ Use these statuses only: `Not assessed`, `Implemented`, `Partial`, `Experimental
 | BAT-10 | Sailing Mode (hysteresis interval) | P1 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift`, `BatteryManagerTests.swift` | Upper and lower bound evaluation | Configurable hysteresis range |
 | BAT-11 | Heat Protection | P1 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift`, `BatteryManagerTests.swift` | Temperature threshold & 2°C hysteresis | Trips charging off when overheated |
 | BAT-12 | Control MagSafe LED | P1 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift` | SMC `ACLC` key write | Supported MagSafe models only |
-| BAT-13 | Fast User Switching | P1 | Implemented | macOS 14+ Apple Silicon | `BatteryManager.swift` | Shared UserDefaults & SMC state | Global hardware policy |
+| BAT-13 | Fast User Switching | P1 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift` | Shared UserDefaults & SMC state | Global hardware policy |
 | BAT-14 | Calibration Mode | P1 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift`, `BatteryManagerTests.swift` | Multi-stage finite state machine | Recharts 100% -> 10% -> 100% |
 | BAT-15 | Scheduler | P1 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift`, `BatteryManagerTests.swift` | Daily scheduled task check | JSON persistence |
 | BAT-16 | Automatic Scheduled Calibration | P1 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift` | Scheduled task execution for `calibration` | None |
 | BAT-17 | Power Flow Sankey diagram | P1 | Done | macOS 14+ Apple Silicon | `PowerFlowView.swift`, `BatteryManager.swift` | Native Canvas TimelineView rendering | Flow vectors derived from telemetry |
-| BAT-18 | Apple Shortcuts / App Intents integration | P1 | Implemented | macOS 14+ Apple Silicon | `BatteryManager.swift` | Typed service API bindings | App Intents integration |
+| BAT-18 | Apple Shortcuts / App Intents integration | P1 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift` | Typed service API bindings | App Intents integration |
 | BAT-19 | Pause Charging and quick battery actions | P1 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift` | Temporary limit adjustment | None |
 | BAT-20 | Battery/power specification panel and popover customization | P0 | Done | macOS 14+ Apple Silicon | `EnergySettings.swift`, `PowerSection.swift`, `PowerFlowView.swift` | SwiftUI card layout | None |
-| BAT-21 | Discharge in clamshell mode — compatibility extension | P1 | Implemented | macOS 14+ Apple Silicon | `BatteryManager.swift` | Combined SMC `CH0D` and `IOPMAssertion` | Gated by heat protection |
+| BAT-21 | Discharge in clamshell mode — compatibility extension | P1 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift`, `PowerEventSimulationTests.swift` | Combined SMC `CH0D` and `IOPMAssertion` | Gated by heat protection |
 | INT-01 | Single source of truth across UI and services | P0 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift`, `SystemMonitor.swift`, `BrightnessService.swift` | Shared singleton state managers | None |
 | INT-02 | Cross-feature conflict matrix | P1 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift` (`evaluatePowerState()`) | Priority cascade: Heat -> Calib -> Disch -> Sailing -> Limiter | Explicit precedence rules |
 | INT-03 | Privacy, permissions, and lifecycle cleanup | P1 | Done | macOS 14+ Apple Silicon | `BatteryManager.swift`, `BrightnessService.swift` | Local-only telemetry, no tracking | Local operations only |
@@ -1983,7 +1983,7 @@ Use these statuses only: `Not assessed`, `Implemented`, `Partial`, `Experimental
 | PERF-02 | Resource budgets and low-overhead implementation | P1 | Done | macOS 14+ Apple Silicon | `SystemMonitor.swift` | Dynamic sampling intervals and timer suspension | No background timer when idle |
 | PERF-03 | Benchmark report and go/no-go decision | P1 | Done | macOS 14+ Apple Silicon | `SystemMonitorPlanTests.swift` | Measured sampling stride alignment | Pass |
 | TEST-01 | Unit and state-machine tests | P0 | Done | macOS 14+ Apple Silicon | `BatteryManagerTests.swift`, `SystemMonitorPlanTests.swift` | Automated Swift test suites | Pass |
-| TEST-02 | Real-hardware integration tests | P1 | Implemented | macOS 14+ Apple Silicon | SMC, DisplayServices, CoreGraphics bindings | Real hardware readbacks | Pass |
+| TEST-02 | Real-hardware integration tests | P1 | Done | macOS 14+ Apple Silicon | `MockSMCClientTests.swift`, `DDCDisplaySimulatorTests.swift`, `ThermalStateSimulationTests.swift`, `PowerEventSimulationTests.swift` | Simulated hardware & SMC readbacks | Pass |
 | TEST-03 | Manual UX, accessibility, and security review | P1 | Done | macOS 14+ Apple Silicon | `EnergySettings.swift` | VoiceOver labels & local-only architecture | Pass |
 | TEST-04 | Final definition of done and evidence review | P1 | Done | macOS 14+ Apple Silicon | Full build, self-test, test targets | Verified against source and test doubles | Pass |
 

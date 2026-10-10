@@ -1747,6 +1747,10 @@ enum CommandBarFeatureTests {
         suite.expect(CommandBarDates.evaluate("hora em londres", now: tuesday, calendar: gregorian,
                                         locale: english)?.detail.hasPrefix("London") == true,
                "a city named the way the person's language names it")
+        let worldClocks = CommandBarDates.worldClocks(identifiers: ["Asia/Tokyo", "Europe/London"], now: tuesday, locale: english)
+        suite.expect(worldClocks.count == 2, "multi-time-zone worldClocks renders requested time zones")
+        suite.expect(worldClocks[0].detail.hasPrefix("Tokyo"), "first world clock is Tokyo")
+        suite.expect(worldClocks[1].detail.hasPrefix("London"), "second world clock is London")
         suite.expect(CommandBarDates.evaluate("time", now: tuesday, calendar: gregorian,
                                         locale: english) == nil,
                "a time word with nowhere to look is not an answer")
