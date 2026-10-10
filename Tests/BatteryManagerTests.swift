@@ -3,54 +3,89 @@
 
 import Foundation
 
+final class BatteryTestFixture {
+    final class Hardware: BatteryControlHardware {
+        var reading: BatteryTelemetry?
+        var writes: [String] = []
+        var inhibited = false
+        var discharging = false
+        var sleepHeld = false
+        var refusesDischarge = false
+        func sample() -> BatteryTelemetry? { reading }
+        func setChargingInhibited(_ value: Bool) -> Bool {
+            writes.append("charge:\(value)"); inhibited = value; return true
+        }
+        func setDischargeMode(_ value: Bool) -> Bool {
+            writes.append("discharge:\(value)")
+            if refusesDischarge { return false }
+            discharging = value; return true
+        }
+        func setMagSafeLED(_ state: BatteryManager.MagSafeState) -> Bool { writes.append("led"); return true }
+        func preventSleep(_ value: Bool) -> Bool { writes.append("sleep:\(value)"); sleepHeld = value; return true }
+    }
+    let name = "com.vorssaint.tests.battery.\(UUID().uuidString)"
+    let defaults: UserDefaults
+    let hardware = Hardware()
+    final class Clock { var date = Date(timeIntervalSince1970: 1_700_000_000) }
+    let clock = Clock()
+    var date: Date {
+        get { clock.date }
+        set { clock.date = newValue }
+    }
+    lazy var manager = BatteryManager(hardware: hardware, defaults: defaults, now: { [clock] in clock.date })
+    init() {
+        defaults = UserDefaults(suiteName: name)!
+        defaults.removePersistentDomain(forName: name)
+    }
+    func read(charge: Int = 80, plugged: Bool = true, temperature: Double? = 28) {
+        hardware.reading = BatteryTelemetry(charge: charge, pluggedIn: plugged,
+                                             temperature: temperature, observedAt: date)
+        manager.pollTelemetry()
+    }
+    deinit { manager.shutdown(); defaults.removePersistentDomain(forName: name) }
+}
+
 enum BatteryManagerTests {
     static func run(_ suite: TestSuite) {
-        let batteryManager = BatteryManager.shared
-
-        // Test Charge Limit evaluation
-        batteryManager.chargeLimit = 80
-        batteryManager.isTopUpActive = false
-        batteryManager.evaluatePowerState()
-        suite.expect(batteryManager.chargeLimit == 80, "charge limit is set to 80")
-        suite.expect(!batteryManager.isTopUpActive, "top up is inactive")
-
-        // Test Top Up toggle
-        batteryManager.isTopUpActive = false
-        batteryManager.toggleTopUp()
-        suite.expect(batteryManager.isTopUpActive, "top up toggles to active")
-        batteryManager.toggleTopUp()
-        suite.expect(!batteryManager.isTopUpActive, "top up toggles to inactive")
-
-        // Test Thermal Protection trip and reset with controlled temperature simulation
-        batteryManager.heatProtectionEnabled = true
-        batteryManager.heatProtectionThresholdCelsius = 35.0
-
-        // High temperature above threshold trips protection
-        batteryManager.evaluatePowerState()
-        suite.expect(!batteryManager.heatProtectionTripped, "initial temperature is normal")
-
-        // Test Sailing Mode configuration
-        batteryManager.sailingModeEnabled = true
-        batteryManager.sailingHysteresis = 5
-        suite.expect(batteryManager.sailingModeEnabled, "sailing mode enabled")
-        suite.expect(batteryManager.sailingHysteresis == 5, "sailing hysteresis is 5%")
-
-        // Test Calibration Mode cycle
-        suite.expect(batteryManager.calibrationStage == .inactive, "initial calibration stage is inactive")
-        batteryManager.startCalibration()
-        suite.expect(batteryManager.calibrationStage == .chargingTo100, "calibration starts at chargingTo100")
-        batteryManager.stopCalibration()
-        suite.expect(batteryManager.calibrationStage == .inactive, "calibration stops and resets to inactive")
-
-        // Test Scheduled Task execution
-        let task = BatteryManager.BatteryScheduledTask(
-            name: "Test Limit 75%",
-            actionRaw: "setLimit",
-            timeOfDaySeconds: 3600,
-            enabled: true,
-            targetLimit: 75
-        )
-        batteryManager.executeTask(task)
-        suite.expect(batteryManager.chargeLimit == 75, "scheduled task executes setLimit to 75")
+        let fixture = BatteryTestFixture(); let battery = fixture.manager
+        fixture.read()
+        suite.expect(fixture.hardware.writes.isEmpty, "battery control is off until explicitly enabled")
+        battery.controlEnabled = true
+        suite.expect(fixture.hardware.inhibited && !battery.isCharging, "limit inhibits charging through the production engine")
+        fixture.read(charge: 70)
+        suite.expect(!fixture.hardware.inhibited && battery.isCharging, "fresh below-limit telemetry enables verified charging")
+        battery.toggleTopUp(); fixture.read(charge: 90)
+        suite.expect(!fixture.hardware.inhibited, "top up permits charging above the ordinary limit")
+        battery.toggleTopUp()
+        suite.expect(fixture.hardware.inhibited, "ending top up restores the limit")
+        battery.startCalibration(); fixture.read(charge: 100)
+        suite.expect(battery.calibrationStage == .dischargingTo10 && fixture.hardware.discharging,
+                     "calibration reaches its real discharge stage")
+        fixture.read(charge: 10)
+        suite.expect(battery.calibrationStage == .rechargingTo100 && !fixture.hardware.discharging,
+                     "calibration clears discharge in the transition at ten percent")
+        battery.stopCalibration()
+        suite.expect(!fixture.hardware.discharging && battery.calibrationStage == .inactive,
+                     "stopping calibration clears discharge immediately")
+        battery.executeTask(.init(name: "limit", actionRaw: "setLimit", timeOfDaySeconds: 0, enabled: true, targetLimit: 75))
+        suite.expect(battery.chargeLimit == 75, "valid scheduled task changes the production limit")
+        battery.executeTask(.init(name: "invalid", actionRaw: "setLimit", timeOfDaySeconds: 0, enabled: true, targetLimit: Int.min))
+        suite.expect(battery.chargeLimit == 75, "invalid scheduled targets never reach hardware")
+        battery.sailingHysteresis = Int.min
+        suite.expect(battery.controlError != nil && !fixture.hardware.discharging,
+                     "extreme hysteresis is refused without integer overflow")
+        battery.sailingHysteresis = 5
+        fixture.date.addTimeInterval(7); battery.evaluatePowerState()
+        suite.expect(battery.controlError != nil && !fixture.hardware.inhibited,
+                     "stale telemetry restores automatic control")
+        fixture.read(charge: 90); fixture.hardware.refusesDischarge = true
+        battery.isDischargeActive = true
+        suite.expect(battery.controlError != nil && !battery.isDischarging,
+                     "a rejected hardware write is not presented as verified discharge")
+        suite.expect(fixture.defaults.bool(forKey: BatteryManager.recoveryKey),
+                     "failed restoration keeps recovery debt")
+        fixture.hardware.refusesDischarge = false; battery.controlEnabled = false
+        suite.expect(!fixture.defaults.bool(forKey: BatteryManager.recoveryKey),
+                     "verified restoration retires recovery debt")
     }
 }

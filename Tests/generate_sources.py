@@ -47,6 +47,15 @@ def availability_declaration(path, prefix):
 
 def main():
     OUTPUT.mkdir(parents=True, exist_ok=True)
+    # Compile complete production services for persistence and control-flow
+    # tests; only the actual brightness writer is replaced by an inert sink.
+    display_services = ["DisplayGroupService", "DisplayFavoritesService", "DisplayProfileService"]
+    write("DisplayServiceContracts.swift", "import AppKit\nimport CoreGraphics\nimport Foundation\nimport os\n"
+          + "enum DisplayServiceContracts {\nenum BrightnessService {\nstatic let shared = Sink()\n"
+          + "final class Sink { func setBrightness(_ value: Double) {} }\n}\n"
+          + "".join(declaration(f"Sources/Vorssaint/Services/Display/{name}.swift", f"final class {name}:")
+                    for name in display_services)
+          + "}\n")
     write("SwitcherAccessibilitySnapshot.swift", "import ApplicationServices\nimport CoreGraphics\nimport Foundation\n"
           + "extension SwitcherAccessibilitySnapshotTests.Reader {\n"
           + "".join(declaration("Sources/Vorssaint/Services/Switcher/WindowEnumerator.swift", prefix)

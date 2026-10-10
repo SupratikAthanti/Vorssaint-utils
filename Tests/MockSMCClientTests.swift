@@ -7,20 +7,27 @@ import Foundation
 final class SMCRegisterStore {
     static let shared = SMCRegisterStore()
 
-    let ch0iKey = SMCClient.Key(code: 0x43483049, name: "CH0I", dataSize: 1, dataType: "ui8 ")
-    let ch0dKey = SMCClient.Key(code: 0x43483044, name: "CH0D", dataSize: 1, dataType: "ui8 ")
-    let aclcKey = SMCClient.Key(code: 0x41434C43, name: "ACLC", dataSize: 1, dataType: "ui8 ")
-    let b0RawSocKey = SMCClient.Key(code: 0x4230536F, name: "B0RawSoC", dataSize: 2, dataType: "ui16")
+    struct Key {
+        let code: UInt32
+        let name: String
+        let dataSize: UInt32
+        let dataType: String
+    }
+
+    let ch0iKey = Key(code: 0x43483049, name: "CH0I", dataSize: 1, dataType: "ui8 ")
+    let ch0dKey = Key(code: 0x43483044, name: "CH0D", dataSize: 1, dataType: "ui8 ")
+    let aclcKey = Key(code: 0x41434C43, name: "ACLC", dataSize: 1, dataType: "ui8 ")
+    let b0RawSocKey = Key(code: 0x4230536F, name: "B0RawSoC", dataSize: 2, dataType: "ui16")
 
     private var rawStorage: [String: [UInt8]] = [:]
     private(set) var writeLog: [(key: String, value: Double, bytes: [UInt8])] = []
 
-    func read(_ key: SMCClient.Key) -> Double? {
+    func read(_ key: Key) -> Double? {
         guard let bytes = rawStorage[key.name] else { return nil }
         return SMCValueCodec.decode(bytes, type: key.dataType)
     }
 
-    func write(_ value: Double, to key: SMCClient.Key) -> Bool {
+    func write(_ value: Double, to key: Key) -> Bool {
         guard let bytes = SMCValueCodec.encode(value, type: key.dataType, size: Int(key.dataSize)) else {
             return false
         }

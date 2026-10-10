@@ -2,455 +2,335 @@
 // Copyright (C) 2026 Vorssaint
 
 import Foundation
+#if canImport(Combine)
 import Combine
-import AppKit
+#endif
 
-/// Central battery management engine supporting AlDente-style features:
-/// Charge Limiter, Top Up, Hardware SoC vs OS SoC, Sailing Mode, Heat Protection,
-/// Discharge / Auto Discharge, Stop Charging when Sleeping / App Closed, MagSafe LED,
-/// Calibration Mode, Task Scheduler, and Power Flow metrics.
+protocol BatteryControlHardware: AnyObject {
+    func sample() -> BatteryTelemetry?
+    /// Returns true only when the hardware read-back matches the request.
+    func setChargingInhibited(_ inhibited: Bool) -> Bool
+    func setDischargeMode(_ discharge: Bool) -> Bool
+    func setMagSafeLED(_ state: BatteryManager.MagSafeState) -> Bool
+    func preventSleep(_ prevent: Bool) -> Bool
+}
+
+struct BatteryTelemetry {
+    var charge: Int
+    var pluggedIn: Bool
+    var charging: Bool = false
+    var temperature: Double?
+    var hardwareCharge: Double?
+    var wallWatts: Double = 0
+    var batteryWatts: Double = 0
+    var macWatts: Double = 0
+    var observedAt: Date
+}
+
+/// Requested preferences never stand in for verified hardware state. The
+/// production adapter is separate so unit tests cannot accidentally open SMC.
 public final class BatteryManager: ObservableObject {
-    public static let shared = BatteryManager()
+    #if VORSSAINT_TESTING
+    // No production singleton or hardware factory exists in the test build.
+    #else
+    public static let shared = BatteryManager(hardware: NativeBatteryControlHardware(),
+                                              defaults: .standard, startsPolling: true)
+    #endif
+    private let hardware: BatteryControlHardware
+    private let defaults: UserDefaults
+    private let now: () -> Date
+    private var timer: Timer?
+    private var telemetry: BatteryTelemetry?
+    private var loading = true
+    private var evaluating = false
+    private var stopped = false
+    private var ownsOverride = false
+    private var chargingInhibited: Bool?
+    static let enabledKey = "batteryControlEnabled"
+    static let recoveryKey = "batteryControlRecoveryNeeded"
+    static let maximumTelemetryAge: TimeInterval = 6
 
-    private let smcClient = SMCClient()
-
-    // MARK: - Published State
-    @Published public private(set) var currentSoC: Int = 80 // Reported OS SoC
-    @Published public private(set) var hardwareSoC: Double? = 80.4 // Hardware raw SoC (nil if unavailable)
-    @Published public private(set) var isPluggedIn: Bool = true
-    @Published public private(set) var isCharging: Bool = false
-    @Published public private(set) var isDischarging: Bool = false
-    @Published public private(set) var wallWatts: Double = 36.0
-    @Published public private(set) var batteryWatts: Double = 15.52
-    @Published public private(set) var macWatts: Double = 20.16
-    @Published public private(set) var batteryTemperatureCelsius: Double = 28.5
-
-    // Feature States & Preferences
-    @Published public var chargeLimit: Int = 80 {
-        didSet {
-            UserDefaults.standard.set(chargeLimit, forKey: DefaultsKey.batteryChargeLimit)
-            evaluatePowerState()
-        }
-    }
-    @Published public var isTopUpActive: Bool = false {
-        didSet {
-            UserDefaults.standard.set(isTopUpActive, forKey: DefaultsKey.batteryTopUpActive)
-            evaluatePowerState()
-        }
-    }
-    @Published public var showHardwarePercentage: Bool = false {
-        didSet { UserDefaults.standard.set(showHardwarePercentage, forKey: DefaultsKey.batteryShowHardwarePercentage) }
-    }
-    @Published public var liveStatusIconsEnabled: Bool = true {
-        didSet { UserDefaults.standard.set(liveStatusIconsEnabled, forKey: DefaultsKey.batteryLiveStatusIconsEnabled) }
-    }
-    @Published public var disableSleepUntilLimit: Bool = false {
-        didSet { UserDefaults.standard.set(disableSleepUntilLimit, forKey: DefaultsKey.batteryDisableSleepUntilLimit) }
-    }
-    @Published public var stopChargingWhenSleeping: Bool = false {
-        didSet { UserDefaults.standard.set(stopChargingWhenSleeping, forKey: DefaultsKey.batteryStopChargingWhenSleeping) }
-    }
-    @Published public var stopChargingWhenAppClosed: Bool = false {
-        didSet { UserDefaults.standard.set(stopChargingWhenAppClosed, forKey: DefaultsKey.batteryStopChargingWhenAppClosed) }
-    }
-    @Published public var isDischargeActive: Bool = false {
-        didSet {
-            UserDefaults.standard.set(isDischargeActive, forKey: DefaultsKey.batteryDischargeActive)
-            evaluatePowerState()
-        }
-    }
-    @Published public var automaticDischarge: Bool = false {
-        didSet { UserDefaults.standard.set(automaticDischarge, forKey: DefaultsKey.batteryAutomaticDischarge) }
-    }
-    @Published public var sailingModeEnabled: Bool = false {
-        didSet { UserDefaults.standard.set(sailingModeEnabled, forKey: DefaultsKey.batterySailingModeEnabled) }
-    }
-    @Published public var sailingHysteresis: Int = 5 { // percentage hysteresis e.g. 5%
-        didSet { UserDefaults.standard.set(sailingHysteresis, forKey: DefaultsKey.batterySailingHysteresis) }
-    }
-    @Published public var heatProtectionEnabled: Bool = false {
-        didSet {
-            UserDefaults.standard.set(heatProtectionEnabled, forKey: DefaultsKey.batteryHeatProtectionEnabled)
-            if !heatProtectionEnabled {
-                heatProtectionTripped = false
-            }
-            evaluatePowerState()
-        }
-    }
-    @Published public var heatProtectionThresholdCelsius: Double = 35.0 { // Default 35°C / 95°F
-        didSet {
-            UserDefaults.standard.set(heatProtectionThresholdCelsius, forKey: DefaultsKey.batteryHeatProtectionThresholdCelsius)
-            evaluatePowerState()
-        }
-    }
-    @Published public private(set) var heatProtectionTripped: Bool = false
-    @Published public var magSafeLEDControlEnabled: Bool = false {
-        didSet { UserDefaults.standard.set(magSafeLEDControlEnabled, forKey: DefaultsKey.batteryMagSafeLEDControlEnabled) }
-    }
+    @Published public private(set) var currentSoC = 0
+    @Published public private(set) var hardwareSoC: Double?
+    @Published public private(set) var isPluggedIn = false
+    @Published public private(set) var isCharging = false
+    @Published public private(set) var isDischarging = false
+    @Published public private(set) var wallWatts = 0.0
+    @Published public private(set) var batteryWatts = 0.0
+    @Published public private(set) var macWatts = 0.0
+    @Published public private(set) var batteryTemperatureCelsius = Double.nan
+    @Published public private(set) var controlError: String?
+    @Published public private(set) var heatProtectionTripped = false
     @Published public private(set) var calibrationStage: CalibrationStage = .inactive
+
+    @Published public var controlEnabled = false {
+        didSet { changed(Self.enabledKey, controlEnabled) }
+    }
+    @Published public var chargeLimit = 80 {
+        didSet { changed(DefaultsKey.batteryChargeLimit, chargeLimit) }
+    }
+    @Published public var isTopUpActive = false {
+        didSet { changed(DefaultsKey.batteryTopUpActive, isTopUpActive) }
+    }
+    @Published public var showHardwarePercentage = false {
+        didSet { changed(DefaultsKey.batteryShowHardwarePercentage, showHardwarePercentage) }
+    }
+    @Published public var liveStatusIconsEnabled = true {
+        didSet { changed(DefaultsKey.batteryLiveStatusIconsEnabled, liveStatusIconsEnabled) }
+    }
+    @Published public var disableSleepUntilLimit = false {
+        didSet { changed(DefaultsKey.batteryDisableSleepUntilLimit, disableSleepUntilLimit) }
+    }
+    @Published public var stopChargingWhenSleeping = false {
+        didSet { changed(DefaultsKey.batteryStopChargingWhenSleeping, stopChargingWhenSleeping) }
+    }
+    @Published public var stopChargingWhenAppClosed = false {
+        didSet { changed(DefaultsKey.batteryStopChargingWhenAppClosed, stopChargingWhenAppClosed) }
+    }
+    @Published public var isDischargeActive = false {
+        didSet { changed(DefaultsKey.batteryDischargeActive, isDischargeActive) }
+    }
+    @Published public var automaticDischarge = false {
+        didSet { changed(DefaultsKey.batteryAutomaticDischarge, automaticDischarge) }
+    }
+    @Published public var sailingModeEnabled = false {
+        didSet { changed(DefaultsKey.batterySailingModeEnabled, sailingModeEnabled) }
+    }
+    @Published public var sailingHysteresis = 5 {
+        didSet { changed(DefaultsKey.batterySailingHysteresis, sailingHysteresis) }
+    }
+    @Published public var heatProtectionEnabled = false {
+        didSet { changed(DefaultsKey.batteryHeatProtectionEnabled, heatProtectionEnabled) }
+    }
+    @Published public var heatProtectionThresholdCelsius = 35.0 {
+        didSet { changed(DefaultsKey.batteryHeatProtectionThresholdCelsius, heatProtectionThresholdCelsius) }
+    }
+    @Published public var magSafeLEDControlEnabled = false {
+        didSet { changed(DefaultsKey.batteryMagSafeLEDControlEnabled, magSafeLEDControlEnabled) }
+    }
     @Published public var scheduledTasks: [BatteryScheduledTask] = [] {
         didSet {
-            if let data = try? JSONEncoder().encode(scheduledTasks) {
-                UserDefaults.standard.set(data, forKey: DefaultsKey.batteryScheduledTasks)
-            }
+            guard !loading, let data = try? JSONEncoder().encode(scheduledTasks) else { return }
+            defaults.set(data, forKey: DefaultsKey.batteryScheduledTasks)
         }
     }
 
     public enum CalibrationStage: String, Codable {
-        case inactive
-        case chargingTo100
-        case dischargingTo10
-        case rechargingTo100
-        case holding1Hour
-        case completed
+        case inactive, chargingTo100, dischargingTo10, rechargingTo100, holding1Hour, completed
     }
-
+    public enum MagSafeState { case green, amber, amberBlinking, off }
     public struct BatteryScheduledTask: Identifiable, Codable {
-        public var id: UUID = UUID()
+        public var id: UUID
         public var name: String
         public var actionRaw: String
-        public var timeOfDaySeconds: Int // Seconds from midnight
+        public var timeOfDaySeconds: Int
         public var enabled: Bool
         public var targetLimit: Int?
         public var lastRunDate: Date?
-
-        public init(id: UUID = UUID(), name: String, actionRaw: String, timeOfDaySeconds: Int, enabled: Bool, targetLimit: Int? = nil, lastRunDate: Date? = nil) {
-            self.id = id
-            self.name = name
-            self.actionRaw = actionRaw
-            self.timeOfDaySeconds = timeOfDaySeconds
-            self.enabled = enabled
-            self.targetLimit = targetLimit
-            self.lastRunDate = lastRunDate
+        public init(id: UUID = UUID(), name: String, actionRaw: String, timeOfDaySeconds: Int,
+                    enabled: Bool, targetLimit: Int? = nil, lastRunDate: Date? = nil) {
+            self.id = id; self.name = name; self.actionRaw = actionRaw
+            self.timeOfDaySeconds = timeOfDaySeconds; self.enabled = enabled
+            self.targetLimit = targetLimit; self.lastRunDate = lastRunDate
         }
     }
 
-    private var timer: Timer?
-    private var sleepAssertionID: IOPMAssertionID = 0
-
-    private func updateSleepAssertion(shouldPreventSleep: Bool) {
-        if shouldPreventSleep && sleepAssertionID == 0 {
-            IOPMAssertionCreateWithName("PreventUserIdleSystemSleep" as CFString,
-                                        IOPMAssertionLevel(kIOPMAssertionLevelOn),
-                                        "Vorssaint Battery Limit Sleep Hold" as CFString,
-                                        &sleepAssertionID)
-        } else if !shouldPreventSleep && sleepAssertionID != 0 {
-            IOPMAssertionRelease(sleepAssertionID)
-            sleepAssertionID = 0
-        }
-    }
-
-    public init() {
-        loadPreferences()
-        setupObservers()
-        startPolling()
-    }
-
-    private func loadPreferences() {
-        let defaults = UserDefaults.standard
+    init(hardware: BatteryControlHardware, defaults: UserDefaults,
+         now: @escaping () -> Date = Date.init, startsPolling: Bool = false) {
+        self.hardware = hardware; self.defaults = defaults; self.now = now
+        controlEnabled = defaults.bool(forKey: Self.enabledKey)
         if defaults.object(forKey: DefaultsKey.batteryChargeLimit) != nil {
             chargeLimit = defaults.integer(forKey: DefaultsKey.batteryChargeLimit)
         }
-        isTopUpActive = defaults.bool(forKey: DefaultsKey.batteryTopUpActive)
+        // Transient top-up/discharge requests never resume after a crash.
         showHardwarePercentage = defaults.bool(forKey: DefaultsKey.batteryShowHardwarePercentage)
-        liveStatusIconsEnabled = defaults.object(forKey: DefaultsKey.batteryLiveStatusIconsEnabled) == nil ? true : defaults.bool(forKey: DefaultsKey.batteryLiveStatusIconsEnabled)
+        liveStatusIconsEnabled = defaults.object(forKey: DefaultsKey.batteryLiveStatusIconsEnabled) as? Bool ?? true
         disableSleepUntilLimit = defaults.bool(forKey: DefaultsKey.batteryDisableSleepUntilLimit)
         stopChargingWhenSleeping = defaults.bool(forKey: DefaultsKey.batteryStopChargingWhenSleeping)
         stopChargingWhenAppClosed = defaults.bool(forKey: DefaultsKey.batteryStopChargingWhenAppClosed)
-        isDischargeActive = defaults.bool(forKey: DefaultsKey.batteryDischargeActive)
         automaticDischarge = defaults.bool(forKey: DefaultsKey.batteryAutomaticDischarge)
         sailingModeEnabled = defaults.bool(forKey: DefaultsKey.batterySailingModeEnabled)
-        if defaults.object(forKey: DefaultsKey.batterySailingHysteresis) != nil {
-            sailingHysteresis = defaults.integer(forKey: DefaultsKey.batterySailingHysteresis)
-        }
+        sailingHysteresis = defaults.object(forKey: DefaultsKey.batterySailingHysteresis) as? Int ?? 5
         heatProtectionEnabled = defaults.bool(forKey: DefaultsKey.batteryHeatProtectionEnabled)
-        if defaults.object(forKey: DefaultsKey.batteryHeatProtectionThresholdCelsius) != nil {
-            heatProtectionThresholdCelsius = defaults.double(forKey: DefaultsKey.batteryHeatProtectionThresholdCelsius)
-        }
+        heatProtectionThresholdCelsius = defaults.object(forKey: DefaultsKey.batteryHeatProtectionThresholdCelsius) as? Double ?? 35
         magSafeLEDControlEnabled = defaults.bool(forKey: DefaultsKey.batteryMagSafeLEDControlEnabled)
-
-        if let data = defaults.data(forKey: DefaultsKey.batteryScheduledTasks),
-           let tasks = try? JSONDecoder().decode([BatteryScheduledTask].self, from: data) {
-            scheduledTasks = tasks
-        } else {
-            scheduledTasks = [
-                BatteryScheduledTask(name: "Daily Charge Limit 80%", actionRaw: "setLimit", timeOfDaySeconds: 18 * 3600, enabled: false, targetLimit: 80),
-                BatteryScheduledTask(name: "Morning Top Up", actionRaw: "topUp", timeOfDaySeconds: 7 * 3600, enabled: false)
-            ]
+        if let data = defaults.data(forKey: DefaultsKey.batteryScheduledTasks), data.count <= 64 * 1024 {
+            scheduledTasks = Array(((try? JSONDecoder().decode([BatteryScheduledTask].self, from: data)) ?? []).prefix(100))
+        }
+        loading = false
+        if defaults.bool(forKey: Self.recoveryKey) {
+            ownsOverride = true
+            restoreAutomatic()
+        }
+        if startsPolling {
+            pollTelemetry()
+            timer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in self?.pollTelemetry() }
         }
     }
 
-    private func setupObservers() {
-        NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(handleSleep), name: NSWorkspace.willSleepNotification, object: nil)
-        NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(handleWake), name: NSWorkspace.didWakeNotification, object: nil)
-    }
-
-    @objc private func handleSleep() {
-        if stopChargingWhenSleeping {
-            smcClient?.setChargingInhibited(true)
-        }
-    }
-
-    @objc private func handleWake() {
+    private func changed(_ key: String, _ value: Any) {
+        guard !loading else { return }
+        defaults.set(value, forKey: key)
         evaluatePowerState()
-    }
-
-    private func startPolling() {
-        timer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
-            self?.pollTelemetry()
-        }
     }
 
     public func pollTelemetry() {
-        // Request active power monitoring from SystemMonitor so telemetry stays fresh
-        SystemMonitor.shared.requestPowerSampling()
+        guard !stopped else { return }
+        acceptTelemetry(hardware.sample())
+        if controlEnabled, freshTelemetry { checkScheduledTasks() }
+    }
 
-        let snapshot = SystemMonitor.shared.snapshot
-        guard let power = snapshot.power else { return }
-
-        let plugged = power.externalConnected
-        if isPluggedIn && !plugged && isTopUpActive {
-            // Physical disconnect reverts Top Up
-            isTopUpActive = false
+    func acceptTelemetry(_ reading: BatteryTelemetry?) {
+        telemetry = reading
+        if let reading, (0...100).contains(reading.charge) {
+            let unplugged = isPluggedIn && !reading.pluggedIn
+            currentSoC = reading.charge; isPluggedIn = reading.pluggedIn
+            hardwareSoC = reading.hardwareCharge.flatMap { $0.isFinite && (0...100).contains($0) ? $0 : nil }
+            batteryTemperatureCelsius = reading.temperature ?? .nan
+            wallWatts = reading.wallWatts.isFinite ? max(0, reading.wallWatts) : 0
+            batteryWatts = reading.batteryWatts.isFinite ? reading.batteryWatts : 0
+            macWatts = reading.macWatts.isFinite ? max(0, reading.macWatts) : 0
+            if unplugged { isTopUpActive = false; isDischargeActive = false; calibrationStage = .inactive }
+            if !controlEnabled { isCharging = reading.charging; isDischarging = !reading.pluggedIn }
         }
-        isPluggedIn = plugged
-
-        let sysWatts = power.systemWatts ?? 20.0
-        let adpWatts = power.adapterWatts ?? (plugged ? 36.0 : 0.0)
-        let batWatts = power.batteryWatts ?? 0.0
-
-        wallWatts = plugged ? max(0, adpWatts) : 0.0
-        macWatts = max(0, sysWatts)
-        batteryWatts = batWatts
-
-        if let charge = power.chargePercent {
-            currentSoC = charge
-            // Read raw SoC from SMC if key available, else match charge
-            if let client = smcClient, let key = client.key(named: "B0RawSoC"), let raw = client.readValue(key) {
-                hardwareSoC = raw
-            } else {
-                hardwareSoC = Double(charge)
-            }
-        }
-
-        if let temp = snapshot.batteryTemperature {
-            batteryTemperatureCelsius = temp
-        }
-
         evaluatePowerState()
-        checkScheduledTasks()
+    }
+
+    private var freshTelemetry: Bool {
+        guard let telemetry, (0...100).contains(telemetry.charge) else { return false }
+        let age = now().timeIntervalSince(telemetry.observedAt)
+        return age >= 0 && age <= Self.maximumTelemetryAge
     }
 
     public func evaluatePowerState() {
-        let activeLimit = isTopUpActive ? 100 : chargeLimit
-
-        // Thermal check
+        guard !loading, !evaluating, !stopped else { return }
+        evaluating = true
+        defer { evaluating = false }
+        guard controlEnabled else {
+            calibrationStage = .inactive; heatProtectionTripped = false
+            restoreAutomatic()
+            return
+        }
+        guard freshTelemetry, (20...100).contains(chargeLimit), (1...20).contains(sailingHysteresis),
+              heatProtectionThresholdCelsius.isFinite, (25...50).contains(heatProtectionThresholdCelsius) else {
+            restoreAutomatic()
+            controlError = "Battery control paused: invalid settings or stale telemetry."
+            return
+        }
         if heatProtectionEnabled {
-            if batteryTemperatureCelsius >= heatProtectionThresholdCelsius {
-                heatProtectionTripped = true
-            } else if batteryTemperatureCelsius <= (heatProtectionThresholdCelsius - 2.0) {
-                heatProtectionTripped = false
+            guard batteryTemperatureCelsius.isFinite, (0...80).contains(batteryTemperatureCelsius) else {
+                restoreAutomatic(); controlError = "Battery control paused: temperature unavailable."; return
             }
-        } else {
-            heatProtectionTripped = false
-        }
-
+            if batteryTemperatureCelsius >= heatProtectionThresholdCelsius { heatProtectionTripped = true }
+            else if batteryTemperatureCelsius <= heatProtectionThresholdCelsius - 2 { heatProtectionTripped = false }
+        } else { heatProtectionTripped = false }
+        guard isPluggedIn else { restoreAutomatic(); return }
         if heatProtectionTripped {
-            isCharging = false
-            smcClient?.setChargingInhibited(true)
-            updateMagSafeLED(state: .amberBlinking)
+            _ = apply(inhibited: true, discharge: false, preventSleep: false, led: .amberBlinking)
             return
         }
-
-        // Calibration mode override
         if calibrationStage != .inactive {
-            processCalibrationMode()
-            return
-        }
-
-        // Discharge check
-        if isDischargeActive || (automaticDischarge && currentSoC > activeLimit && isPluggedIn) {
-            if currentSoC <= activeLimit {
-                isDischargeActive = false
-                isCharging = false
-                smcClient?.setChargingInhibited(true)
-                updateMagSafeLED(state: .green)
-            } else {
-                isCharging = false
-                isDischarging = true
-                smcClient?.setDischargeMode(true)
-                updateMagSafeLED(state: .amber)
+            if calibrationStage == .chargingTo100 && currentSoC >= 100 { calibrationStage = .dischargingTo10 }
+            if calibrationStage == .dischargingTo10 && currentSoC <= 10 { calibrationStage = .rechargingTo100 }
+            if calibrationStage == .rechargingTo100 && currentSoC >= 100 { calibrationStage = .inactive }
+            if calibrationStage != .inactive {
+                let discharge = calibrationStage == .dischargingTo10
+                _ = apply(inhibited: discharge, discharge: discharge, preventSleep: false, led: .amber)
+                return
             }
-            return
+        }
+        let limit = isTopUpActive ? 100 : chargeLimit
+        if currentSoC <= limit && isDischargeActive { isDischargeActive = false }
+        let discharge = currentSoC > limit && (isDischargeActive || automaticDischarge)
+        var inhibited = currentSoC >= limit
+        if sailingModeEnabled, currentSoC < limit, currentSoC > limit - sailingHysteresis {
+            inhibited = chargingInhibited ?? false
+        }
+        _ = apply(inhibited: inhibited || discharge, discharge: discharge,
+                  preventSleep: disableSleepUntilLimit && !discharge && currentSoC < limit,
+                  led: inhibited && !discharge ? .green : .amber)
+    }
+
+    @discardableResult
+    private func apply(inhibited: Bool, discharge: Bool, preventSleep: Bool, led: MagSafeState) -> Bool {
+        // Write-ahead recovery debt persists until all restorations read back.
+        defaults.set(true, forKey: Self.recoveryKey); ownsOverride = true
+        guard hardware.setDischargeMode(discharge), hardware.setChargingInhibited(inhibited),
+              hardware.preventSleep(preventSleep) else {
+            restoreAutomatic()
+            controlError = "Battery hardware rejected the requested state; automatic control restoration was attempted."
+            return false
+        }
+        chargingInhibited = inhibited
+        isCharging = !inhibited && isPluggedIn; isDischarging = discharge
+        controlError = nil
+        if magSafeLEDControlEnabled, !hardware.setMagSafeLED(led) {
+            controlError = "Battery state verified, but the MagSafe LED change failed."
+        }
+        return true
+    }
+
+    private func restoreAutomatic() {
+        guard ownsOverride else { return }
+        let discharge = hardware.setDischargeMode(false)
+        let charge = hardware.setChargingInhibited(false)
+        let sleep = hardware.preventSleep(false)
+        if discharge && charge && sleep {
+            ownsOverride = false; chargingInhibited = nil
+            defaults.removeObject(forKey: Self.recoveryKey)
+            isDischarging = telemetry.map { !$0.pluggedIn } ?? false
+            isCharging = telemetry?.charging ?? false
+            controlError = nil
         } else {
-            smcClient?.setDischargeMode(false)
-            isDischarging = false
+            controlError = "Unable to verify automatic battery control restoration. Retry or restart the Mac."
         }
-
-        // Sailing Mode check
-        if sailingModeEnabled && isPluggedIn {
-            let lowerBound = activeLimit - sailingHysteresis
-            if currentSoC >= activeLimit {
-                isCharging = false
-                smcClient?.setChargingInhibited(true)
-                updateMagSafeLED(state: .green)
-            } else if currentSoC <= lowerBound {
-                isCharging = true
-                smcClient?.setChargingInhibited(false)
-                updateMagSafeLED(state: .amber)
-            }
-            return
-        }
-
-        // Sleep prevention check
-        if disableSleepUntilLimit && isPluggedIn && currentSoC < activeLimit {
-            updateSleepAssertion(shouldPreventSleep: true)
-        } else {
-            updateSleepAssertion(shouldPreventSleep: false)
-        }
-
-        // Regular Charge Limiter
-        if isPluggedIn {
-            if currentSoC >= activeLimit {
-                isCharging = false
-                smcClient?.setChargingInhibited(true)
-                updateMagSafeLED(state: .green)
-            } else {
-                isCharging = true
-                smcClient?.setChargingInhibited(false)
-                updateMagSafeLED(state: .amber)
-            }
-        } else {
-            isCharging = false
-            smcClient?.setChargingInhibited(false)
-            updateMagSafeLED(state: .off)
+        if magSafeLEDControlEnabled, !hardware.setMagSafeLED(.off) {
+            controlError = "Unable to restore the MagSafe LED."
         }
     }
 
-    public enum MagSafeState { case green, amber, amberBlinking, off }
-
-    private func updateMagSafeLED(state: MagSafeState) {
-        guard magSafeLEDControlEnabled else { return }
-        smcClient?.setMagSafeLED(state)
+    func handleSleep() {
+        guard controlEnabled, freshTelemetry else { restoreAutomatic(); return }
+        _ = apply(inhibited: stopChargingWhenSleeping, discharge: false, preventSleep: false, led: .off)
+        telemetry = nil
     }
-
-    // MARK: - Actions
-
-    public func toggleTopUp() {
-        isTopUpActive.toggle()
+    func handleWake() { telemetry = nil; pollTelemetry() }
+    public func shutdown() {
+        guard !stopped else { return }
+        timer?.invalidate(); timer = nil
+        if controlEnabled, stopChargingWhenAppClosed, freshTelemetry {
+            _ = apply(inhibited: true, discharge: false, preventSleep: false, led: .off)
+            // Keep recovery debt so the next launch restores system control first.
+        } else { restoreAutomatic() }
+        stopped = true
     }
-
-    public func toggleDischarge() {
-        isDischargeActive.toggle()
-    }
-
+    public func toggleTopUp() { isTopUpActive.toggle() }
+    public func toggleDischarge() { isDischargeActive.toggle() }
     public func startCalibration() {
-        isDischargeActive = false
-        smcClient?.setDischargeMode(false)
-        calibrationStage = .chargingTo100
-        evaluatePowerState()
+        guard controlEnabled, freshTelemetry else { return }
+        isDischargeActive = false; calibrationStage = .chargingTo100; evaluatePowerState()
     }
-
-    public func stopCalibration() {
-        calibrationStage = .inactive
-        evaluatePowerState()
-    }
-
-    private func processCalibrationMode() {
-        switch calibrationStage {
-        case .chargingTo100:
-            if currentSoC >= 100 {
-                calibrationStage = .dischargingTo10
-            } else {
-                isCharging = true
-                smcClient?.setChargingInhibited(false)
-            }
-        case .dischargingTo10:
-            if currentSoC <= 10 {
-                calibrationStage = .rechargingTo100
-            } else {
-                isCharging = false
-                isDischarging = true
-                smcClient?.setDischargeMode(true)
-            }
-        case .rechargingTo100:
-            if currentSoC >= 100 {
-                calibrationStage = .completed
-            } else {
-                isCharging = true
-                smcClient?.setDischargeMode(false)
-                smcClient?.setChargingInhibited(false)
-            }
-        case .completed:
-            calibrationStage = .inactive
-            evaluatePowerState()
-        default:
-            break
-        }
-    }
+    public func stopCalibration() { calibrationStage = .inactive; isDischargeActive = false; evaluatePowerState() }
 
     private func checkScheduledTasks() {
-        let calendar = Calendar.current
-        let now = Date()
-        let comps = calendar.dateComponents([.hour, .minute, .second], from: now)
-        let currentSecs = (comps.hour ?? 0) * 3600 + (comps.minute ?? 0) * 60 + (comps.second ?? 0)
-
-        for i in 0..<scheduledTasks.count where scheduledTasks[i].enabled {
-            let task = scheduledTasks[i]
-            let taskTime = task.timeOfDaySeconds
-
-            let alreadyRunToday: Bool = {
-                guard let last = task.lastRunDate else { return false }
-                return calendar.isDate(last, inSameDayAs: now)
-            }()
-
-            if !alreadyRunToday && currentSecs >= taskTime {
-                executeTask(task)
-                scheduledTasks[i].lastRunDate = now
-            }
+        let calendar = Calendar.current; let date = now()
+        let parts = calendar.dateComponents([.hour, .minute, .second], from: date)
+        let seconds = (parts.hour ?? 0) * 3600 + (parts.minute ?? 0) * 60 + (parts.second ?? 0)
+        for index in scheduledTasks.indices where scheduledTasks[index].enabled {
+            let task = scheduledTasks[index]
+            guard (0..<86400).contains(task.timeOfDaySeconds), seconds >= task.timeOfDaySeconds,
+                  task.lastRunDate.map({ calendar.isDate($0, inSameDayAs: date) }) != true else { continue }
+            executeTask(task); scheduledTasks[index].lastRunDate = date
         }
     }
-
     public func executeTask(_ task: BatteryScheduledTask) {
+        guard controlEnabled, freshTelemetry else { return }
         switch task.actionRaw {
-        case "setLimit":
-            if let limit = task.targetLimit {
-                chargeLimit = limit
-            }
-        case "topUp":
-            isTopUpActive = true
-        case "discharge":
-            isDischargeActive = true
-        case "calibration":
-            startCalibration()
-        default:
-            break
+        case "setLimit": if let limit = task.targetLimit, (20...100).contains(limit) { chargeLimit = limit }
+        case "topUp": isTopUpActive = true
+        case "discharge": isDischargeActive = true
+        case "calibration": startCalibration()
+        default: break
         }
-    }
-}
-
-// MARK: - SMC Integration Extensions
-
-extension SMCClient {
-    public func setChargingInhibited(_ inhibited: Bool) {
-        guard let key = self.key(named: "CH0I") else { return }
-        try? self.writeBytes([inhibited ? 1 : 0], to: key)
-    }
-
-    public func setDischargeMode(_ discharge: Bool) {
-        guard let key = self.key(named: "CH0D") else { return }
-        try? self.writeBytes([discharge ? 1 : 0], to: key)
-    }
-
-    public func setMagSafeLED(_ state: BatteryManager.MagSafeState) {
-        guard let key = self.key(named: "ACLC") else { return }
-        let val: UInt8
-        switch state {
-        case .green: val = 1
-        case .amber: val = 2
-        case .amberBlinking: val = 3
-        case .off: val = 0
-        }
-        try? self.writeBytes([val], to: key)
     }
 }

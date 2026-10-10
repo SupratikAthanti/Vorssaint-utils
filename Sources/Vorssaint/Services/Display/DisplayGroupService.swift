@@ -51,13 +51,16 @@ final class DisplayGroupService: ObservableObject {
     private let storageKey = "com.vorssaint.displayGroups.saved"
     private var isSyncing = false // Circular update prevention guard
 
-    private init() {
+    private let defaults: UserDefaults
+
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
         loadGroups()
     }
 
     /// Loads saved display groups from UserDefaults.
     func loadGroups() {
-        guard let data = UserDefaults.standard.data(forKey: storageKey) else {
+        guard let data = defaults.data(forKey: storageKey) else {
             groups = []
             return
         }
@@ -73,7 +76,7 @@ final class DisplayGroupService: ObservableObject {
     func saveGroups() {
         do {
             let data = try JSONEncoder().encode(groups)
-            UserDefaults.standard.set(data, forKey: storageKey)
+            defaults.set(data, forKey: storageKey)
         } catch {
             Self.log.error("Failed to encode display groups: \(error.localizedDescription)")
         }

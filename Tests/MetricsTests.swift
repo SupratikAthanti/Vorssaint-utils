@@ -117,6 +117,7 @@ struct MetricsTests {
             ("display-restoration", {
                 DisplayRestorationTests.run(suite)
                 DisplayBrightnessTests.run(suite)
+                DDCDisplaySimulatorTests.run(suite)
                 BrightnessStepTests.run(suite)
                 DisplayModeTests.run(suite)
                 DisplayModeSelectorTests.run(suite)

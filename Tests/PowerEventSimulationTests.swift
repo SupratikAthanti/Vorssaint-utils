@@ -5,45 +5,33 @@ import Foundation
 
 enum PowerEventSimulationTests {
     static func run(_ suite: TestSuite) {
-        let batteryManager = BatteryManager.shared
-
-        // 1. Test Initial Power State & AC Adapter Connection
-        batteryManager.evaluatePowerState()
-        suite.expect(batteryManager.isPluggedIn, "BatteryManager detects plugged-in AC power adapter state")
-
-        // 2. Test Top Up Mode Activation & Unplug Revert / Expiration
-        batteryManager.chargeLimit = 80
-        batteryManager.isTopUpActive = true
-        suite.expect(batteryManager.isTopUpActive, "Top Up mode activated on BatteryManager")
-
-        // Simulate physical AC unplug during Top Up
-        batteryManager.pollTelemetry()
-        suite.expect(batteryManager.chargeLimit == 80, "Original baseline charge limit (80%) is preserved")
-
-        // 3. Test Sleep / Wake Notifications & stopChargingWhenSleeping
-        batteryManager.stopChargingWhenSleeping = true
-        suite.expect(batteryManager.stopChargingWhenSleeping, "stopChargingWhenSleeping option enabled")
-
-        // Post simulated sleep notification
-        NotificationCenter.default.post(name: NSWorkspace.willSleepNotification, object: nil)
-        // Post simulated wake notification
-        NotificationCenter.default.post(name: NSWorkspace.didWakeNotification, object: nil)
-
-        // 4. Test Manual Discharge Start / Stop & Clamshell assertions
-        batteryManager.isDischargeActive = true
-        suite.expect(batteryManager.isDischargeActive, "Manual discharge active on BatteryManager")
-        batteryManager.isDischargeActive = false
-        suite.expect(!batteryManager.isDischargeActive, "Manual discharge deactivated on BatteryManager")
-
-        // 5. Test Sailing Mode hysteresis parameters
-        batteryManager.sailingModeEnabled = true
-        batteryManager.sailingHysteresis = 5
-        batteryManager.evaluatePowerState()
-        suite.expect(batteryManager.sailingModeEnabled, "Sailing mode active")
-        suite.expect(batteryManager.sailingHysteresis == 5, "Sailing hysteresis set to 5%")
-
-        // Cleanup
-        batteryManager.sailingModeEnabled = false
-        batteryManager.evaluatePowerState()
+        let fixture = BatteryTestFixture(); let battery = fixture.manager
+        fixture.read(charge: 70); battery.controlEnabled = true
+        battery.disableSleepUntilLimit = true
+        suite.expect(fixture.hardware.sleepHeld, "below-limit control acquires the fake sleep assertion")
+        battery.isTopUpActive = true
+        fixture.read(charge: 70, plugged: false)
+        suite.expect(!battery.isTopUpActive && !fixture.hardware.sleepHeld && !fixture.hardware.discharging,
+                     "actual unplug transition clears transient control and sleep holds")
+        fixture.read(charge: 70); battery.stopChargingWhenSleeping = true
+        battery.handleSleep()
+        suite.expect(fixture.hardware.inhibited && !fixture.hardware.discharging && !fixture.hardware.sleepHeld,
+                     "sleep entry point inhibits charging without preserving discharge or assertions")
+        battery.handleWake()
+        suite.expect(!fixture.hardware.inhibited && battery.isCharging,
+                     "wake reads new injected telemetry before resuming")
+        battery.shutdown()
+        suite.expect(!fixture.hardware.inhibited && !fixture.hardware.discharging && !fixture.hardware.sleepHeld,
+                     "ordinary shutdown restores system control")
+        let hold = BatteryTestFixture(); hold.read(charge: 70)
+        hold.manager.controlEnabled = true; hold.manager.stopChargingWhenAppClosed = true
+        hold.manager.shutdown()
+        suite.expect(hold.hardware.inhibited && !hold.hardware.discharging && !hold.hardware.sleepHeld
+                     && hold.defaults.bool(forKey: BatteryManager.recoveryKey),
+                     "explicit quit hold leaves charging inhibited with recovery debt but no discharge")
+        let recovering = BatteryManager(hardware: hold.hardware, defaults: hold.defaults, now: { hold.date })
+        suite.expect(!hold.hardware.inhibited && !hold.defaults.bool(forKey: BatteryManager.recoveryKey),
+                     "next initialization verifies automatic restoration before any fresh control")
+        recovering.shutdown()
     }
 }

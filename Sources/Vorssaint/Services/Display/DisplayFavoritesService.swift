@@ -47,7 +47,10 @@ final class DisplayFavoritesService: ObservableObject {
     private let favoritesKey = "com.vorssaint.displayFavorites"
     private let bindingsKey = "com.vorssaint.displayHotkeyBindings"
 
-    private init() {
+    private let defaults: UserDefaults
+
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
         loadFavorites()
         loadBindings()
     }
@@ -139,7 +142,7 @@ final class DisplayFavoritesService: ObservableObject {
 
         switch action {
         case .brightness(let level):
-            BrightnessService.shared.setBrightness(Float(level))
+            BrightnessService.shared.setBrightness(level)
             Self.log.log("Triggered hotkey brightness: \(level)")
             return true
 
@@ -162,14 +165,14 @@ final class DisplayFavoritesService: ObservableObject {
     private func persistFavorites() {
         do {
             let data = try JSONEncoder().encode(favoriteModesByFingerprint)
-            UserDefaults.standard.set(data, forKey: favoritesKey)
+            defaults.set(data, forKey: favoritesKey)
         } catch {
             Self.log.error("Failed to persist favorite display modes: \(error.localizedDescription)")
         }
     }
 
     private func loadFavorites() {
-        guard let data = UserDefaults.standard.data(forKey: favoritesKey) else { return }
+        guard let data = defaults.data(forKey: favoritesKey) else { return }
         do {
             favoriteModesByFingerprint = try JSONDecoder().decode([String: [FavoriteMode]].self, from: data)
         } catch {
@@ -180,17 +183,17 @@ final class DisplayFavoritesService: ObservableObject {
     private func persistBindings() {
         do {
             let data = try JSONEncoder().encode(Array(hotkeyBindings.values))
-            UserDefaults.standard.set(data, forKey: bindingsKey)
+            defaults.set(data, forKey: bindingsKey)
         } catch {
             Self.log.error("Failed to persist hotkey bindings: \(error.localizedDescription)")
         }
     }
 
     private func loadBindings() {
-        guard let data = UserDefaults.standard.data(forKey: bindingsKey) else { return }
+        guard let data = defaults.data(forKey: bindingsKey) else { return }
         do {
             let bindings = try JSONDecoder().decode([HotkeyBinding].self, from: data)
-            hotkeyBindings = Dictionary(uniqueKeysWithValues: bindings.map { ($0.keyCombination, $0) })
+            hotkeyBindings = Dictionary(bindings.map { ($0.keyCombination, $0) }, uniquingKeysWith: { _, latest in latest })
         } catch {
             Self.log.error("Failed to decode hotkey bindings: \(error.localizedDescription)")
         }

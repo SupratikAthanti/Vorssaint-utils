@@ -142,6 +142,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, NSW
         HotkeyManager.shared.syncWithPreferences()
 
         _ = BatteryManager.shared
+        NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.willSleepNotification, object: nil, queue: .main) { _ in
+                BatteryManager.shared.handleSleep()
+            }
+        NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { _ in
+                BatteryManager.shared.handleWake()
+            }
         KeepAwakeManager.shared.recoverIfNeeded {
             KeepAwakeManager.shared.activateOnLaunchIfNeeded()
         }
@@ -276,6 +284,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, NSW
 
     func applicationWillTerminate(_ notification: Notification) {
         isTerminating = true
+        BatteryManager.shared.shutdown()
         CommandBarService.shared.restoreBorrowedInputSource()
         if AppFeature.notch.isAvailable { NotchService.shared.stop(restoreCapture: false) }
         // Quitting properly means the start worked, whenever it happened.

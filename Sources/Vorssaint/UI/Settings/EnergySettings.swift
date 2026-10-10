@@ -501,6 +501,13 @@ struct EnergySettings: View {
 
     private var batteryAndPowerFlowCard: some View {
         SettingsCard(title: "Battery & Power Flow") {
+            Toggle("Enable Battery Control", isOn: $batteryManager.controlEnabled)
+            Text("Off by default. Hardware changes require fresh readings and verified write-back; disabling restores system control.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            if let error = batteryManager.controlError {
+                Text(error).font(.caption).foregroundStyle(.orange)
+            }
             // Power Flow Sankey Visualization (Feature 17)
             PowerFlowView()
 

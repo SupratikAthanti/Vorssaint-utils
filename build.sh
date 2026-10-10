@@ -437,7 +437,6 @@ if (( TEST )); then
         Sources/Vorssaint/App/MenuBarRenderer.swift
         Sources/Vorssaint/Services/SystemMonitor/SystemMonitor.swift
         Sources/Vorssaint/App/StatusItemController.swift
-        Sources/Vorssaint/App/StatusItemPlacementSupport.swift
         Sources/Vorssaint/App/MenuBarSpacingSupport.swift
         Sources/Vorssaint/App/MenuBarAllowanceSupport.swift
         Sources/Vorssaint/App/ReopenRequestSupport.swift
@@ -517,7 +516,6 @@ if (( TEST )); then
         Sources/Vorssaint/Services/Metrics/BatteryTimeSupport.swift
         Sources/Vorssaint/Services/Metrics/BatteryPowerSupport.swift
         Sources/Vorssaint/Services/Metrics/BatteryManager.swift
-        Sources/Vorssaint/UI/Settings/PowerFlowView.swift
         Sources/Vorssaint/Services/BoundedProcessRunner.swift
         Sources/Vorssaint/Services/DetachedProcess.swift
         Sources/Vorssaint/Services/ShellSupport.swift
@@ -552,13 +550,12 @@ if (( TEST )); then
         Sources/Vorssaint/Services/ManagedDownloads/WhatsAppDownloadSupport.swift
         Sources/Vorssaint/Core/SecureInputSupport.swift
         Tests/*.swift
-        Tests/BatteryManagerTests.swift
         build/generated-tests/*.swift
     )
     TEST_OUTPUT_FILE_MAP="$TEST_OBJECT_DIR/output-file-map.json"
     write_swift_output_file_map "$TEST_OUTPUT_FILE_MAP" "$TEST_OBJECT_DIR" "${TEST_SOURCES[@]}"
     echo "▸ Building & running tests against $(basename "$SDK")…"
-    swiftc -Onone -incremental -enable-batch-mode -j "$(sysctl -n hw.logicalcpu)" \
+    swiftc -D VORSSAINT_TESTING -Onone -incremental -enable-batch-mode -j "$(sysctl -n hw.logicalcpu)" \
         -module-name VorssaintTests -output-file-map "$TEST_OUTPUT_FILE_MAP" \
         -target "$TARGET" -sdk "$SDK" "${SDK_COMPAT_FLAGS[@]}" \
         "${VM_STATISTICS_COMPAT_FLAGS[@]}" "${TEST_SOURCES[@]}" -o build/metrics-tests

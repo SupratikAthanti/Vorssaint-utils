@@ -40,13 +40,22 @@ final class DisplayProfileService: ObservableObject {
     private var retryCount = 0
     private let maxRetries = 3
 
-    private init() {
+    private let defaults: UserDefaults
+    private let onlineDisplays: (() -> [DisplayConfig])?
+    private let applyLayout: (([DisplayConfig]) -> Bool)?
+
+    init(defaults: UserDefaults = .standard,
+         onlineDisplays: (() -> [DisplayConfig])? = nil,
+         applyLayout: (([DisplayConfig]) -> Bool)? = nil) {
+        self.defaults = defaults
+        self.onlineDisplays = onlineDisplays
+        self.applyLayout = applyLayout
         loadProfiles()
     }
 
     /// Loads saved display profiles from UserDefaults.
     func loadProfiles() {
-        guard let data = UserDefaults.standard.data(forKey: storageKey) else {
+        guard let data = defaults.data(forKey: storageKey) else {
             profiles = []
             return
         }
@@ -62,7 +71,7 @@ final class DisplayProfileService: ObservableObject {
     func saveProfiles() {
         do {
             let data = try JSONEncoder().encode(profiles)
-            UserDefaults.standard.set(data, forKey: storageKey)
+            defaults.set(data, forKey: storageKey)
         } catch {
             Self.log.error("Failed to encode display profiles: \(error.localizedDescription)")
         }
@@ -91,7 +100,10 @@ final class DisplayProfileService: ObservableObject {
     /// Applies a display layout profile, skipping unmatched or disconnected displays with anti-loop retry limits.
     func applyProfile(_ profile: DisplayLayoutProfile) -> Bool {
         let onlineDisplays = fetchOnlineDisplays()
-        let onlineMap = Dictionary(uniqueKeysWithValues: onlineDisplays.map { ($0.fingerprint, $0.id) })
+        // Ambiguous identities are not safe targets; never guess which of two
+        // identical serial-less monitors a persisted profile meant.
+        let grouped = Dictionary(grouping: onlineDisplays, by: \.fingerprint)
+        let onlineMap = grouped.compactMapValues { $0.count == 1 ? $0.first?.id : nil }
 
         // Filter: skip unmatched or disconnected displays, updating display IDs to current active CGDirectDisplayIDs
         let matchedDisplays = profile.displays.compactMap { config -> DisplayConfig? in
@@ -160,6 +172,7 @@ final class DisplayProfileService: ObservableObject {
     }
 
     private func fetchOnlineDisplays() -> [DisplayConfig] {
+        if let onlineDisplays { return onlineDisplays() }
         var displayCount: UInt32 = 0
         let maxDisplays: UInt32 = 16
         var displayIDs = [CGDirectDisplayID](repeating: 0, count: Int(maxDisplays))
@@ -201,6 +214,12 @@ final class DisplayProfileService: ObservableObject {
     }
 
     private func applyLayoutToSystem(displays: [DisplayConfig]) -> Bool {
+        guard displays.allSatisfy({
+            $0.frame.origin.x.isFinite && $0.frame.origin.y.isFinite
+                && $0.frame.origin.x >= CGFloat(Int32.min) && $0.frame.origin.x <= CGFloat(Int32.max)
+                && $0.frame.origin.y >= CGFloat(Int32.min) && $0.frame.origin.y <= CGFloat(Int32.max)
+        }) else { return false }
+        if let applyLayout { return applyLayout(displays) }
         var configRef: CGDisplayConfigRef?
         let beginResult = CGBeginDisplayConfiguration(&configRef)
         guard beginResult == .success, let ref = configRef else {
@@ -208,7 +227,10 @@ final class DisplayProfileService: ObservableObject {
         }
 
         for display in displays {
-            _ = CGConfigureDisplayOrigin(ref, display.id, Int32(display.frame.origin.x), Int32(display.frame.origin.y))
+            guard CGConfigureDisplayOrigin(ref, display.id, Int32(display.frame.origin.x), Int32(display.frame.origin.y)) == .success else {
+                CGCancelDisplayConfiguration(ref)
+                return false
+            }
         }
 
         let completeResult = CGCompleteDisplayConfiguration(ref, kCGConfigurePermanently)
